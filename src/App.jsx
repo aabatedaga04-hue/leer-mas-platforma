@@ -25,7 +25,7 @@ export default function App() {
         <div className="flex justify-center mb-4">
           <BookOpen className="w-12 h-12 text-blue-400" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">LEER+ Platform</h1>
+        <h1 className="text-2xl font-bold mb-2">LEER+</h1>
         <p className="text-slate-400 text-sm mb-6">Entorno configurado correctamente.</p>
         
         <div className="flex items-center justify-center gap-2 bg-slate-900/60 p-3 rounded-lg border border-slate-700">
