@@ -1,48 +1,38 @@
-import { BookOpen, Search, Library, UserCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { supabase } from './supabaseClient'
+import { BookOpen, Database } from 'lucide-react'
 
-function App() {
+export default function App() {
+  const [dbStatus, setDbStatus] = useState('Conectando a Supabase...')
+
+  useEffect(() => {
+    async function checkConnection() {
+      const { error } = await supabase.from('test').select('*').limit(1)
+      
+      // Si el error es 42P01 (tabla 'test' no existe) o es null, la API Key y conexión son correctas
+      if (!error || error.code === '42P01') {
+        setDbStatus('¡Conexión exitosa a Supabase!')
+      } else {
+        setDbStatus(`Error de conexión: ${error.message}`)
+      }
+    }
+    checkConnection()
+  }, [])
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg text-center border border-slate-200">
-        
-        {/* Ícono principal */}
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6">
+      <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl max-w-md w-full text-center">
         <div className="flex justify-center mb-4">
-          <div className="bg-indigo-600 text-white p-4 rounded-full shadow-lg">
-            <BookOpen className="w-12 h-12" />
-          </div>
+          <BookOpen className="w-12 h-12 text-blue-400" />
         </div>
-
-        {/* Título y estado */}
-        <h1 className="text-3xl font-extrabold text-slate-800 mb-2">
-          LEER+ Platform
-        </h1>
-        <p className="text-slate-600 mb-6">
-          Entorno base configurado correctamente para el grupo.
-        </p>
-
-        {/* Muestra de íconos/módulos para probar Lucide */}
-        <div className="grid grid-cols-3 gap-3 mb-6 text-xs text-slate-500">
-          <div className="p-3 bg-slate-50 rounded-lg flex flex-col items-center gap-1 border">
-            <Search className="w-5 h-5 text-indigo-500" />
-            <span>Catálogo</span>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg flex flex-col items-center gap-1 border">
-            <Library className="w-5 h-5 text-indigo-500" />
-            <span>Biblioteca</span>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg flex flex-col items-center gap-1 border">
-            <UserCheck className="w-5 h-5 text-indigo-500" />
-            <span>Préstamos</span>
-          </div>
+        <h1 className="text-2xl font-bold mb-2">LEER+ Platform</h1>
+        <p className="text-slate-400 text-sm mb-6">Entorno configurado correctamente.</p>
+        
+        <div className="flex items-center justify-center gap-2 bg-slate-900/60 p-3 rounded-lg border border-slate-700">
+          <Database className="w-5 h-5 text-emerald-400" />
+          <span className="text-sm font-medium text-emerald-300">{dbStatus}</span>
         </div>
-
-        {/* Etiqueta de estado */}
-        <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full">
-          ✓ React + TailwindCSS + Lucide OK
-        </span>
       </div>
     </div>
   )
 }
-
-export default App
