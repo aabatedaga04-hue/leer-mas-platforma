@@ -1,55 +1,160 @@
-import { useEffect, useState } from 'react'
-import { supabase } from './supabaseClient'
-import { BookOpen, CheckCircle, Database, AlertCircle } from 'lucide-react'
+import { useState } from 'react'
+import { 
+  BookOpen, 
+  User, 
+  Search, 
+  Library, 
+  BookMarked, 
+  PenTool, 
+  Sparkles, 
+  Building2, 
+  ShieldCheck, 
+  LogOut 
+} from 'lucide-react'
 
 export default function App() {
-  const [dbStatus, setDbStatus] = useState('Conectando a Supabase...')
-  const [isConnected, setIsConnected] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
+  const [selectedRole, setSelectedRole] = useState('LectoEscritor')
 
-  useEffect(() => {
-    async function checkConnection() {
-      try {
-        // Consultamos la sesión actual de la base de datos para verificar que las API Keys son válidas y hay respuesta del servidor
-        const { error } = await supabase.auth.getSession()
-        
-        if (error) {
-          setDbStatus(`Error de autenticación: ${error.message}`)
-          setIsConnected(false)
-        } else {
-          setDbStatus('¡Conexión exitosa y activa a Supabase!')
-          setIsConnected(true)
-        }
-      } catch (err) {
-        setDbStatus('No se pudo establecer comunicación con el servidor.')
-        setIsConnected(false)
-      }
-    }
-    
-    checkConnection()
-  }, [])
+  // Opciones de navegación según el rol seleccionado
+  const navOptionsByRole = {
+    Admin: [
+      { label: 'Dashboard', icon: ShieldCheck },
+      { label: 'Gestión de Usuarios', icon: User },
+      { label: 'Reportes de Sistema', icon: BookOpen }
+    ],
+    Biblioteca: [
+      { label: 'Catálogo General', icon: Library },
+      { label: 'Gestión de Préstamos', icon: BookMarked },
+      { label: 'Devoluciones y Sanciones', icon: ShieldCheck }
+    ],
+    Editorial: [
+      { label: 'Publicar Novedad', icon: Building2 },
+      { label: 'Descubrir Autores', icon: Sparkles },
+      { label: 'Mis Publicaciones', icon: BookOpen }
+    ],
+    LectoEscritor: [
+      { label: 'Mis Lecturas', icon: BookMarked },
+      { label: 'Mis Escritos', icon: PenTool },
+      { label: 'Explorar Catálogo', icon: Library }
+    ]
+  }
 
-  return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 font-sans">
-      <div className="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl max-w-md w-full text-center">
-        <div className="flex justify-center mb-4">
-          <BookOpen className="w-12 h-12 text-blue-400" />
-        </div>
-        <h1 className="text-2xl font-bold mb-2">LEER+ Platform</h1>
-        <p className="text-slate-400 text-sm mb-6">Entorno local configurado correctamente.</p>
-        
-        <div className={`flex items-center justify-center gap-2 p-3 rounded-lg border ${
-          isConnected 
-            ? 'bg-emerald-950/50 border-emerald-700/50 text-emerald-300' 
-            : 'bg-amber-950/50 border-amber-700/50 text-amber-300'
-        }`}>
-          {isConnected ? (
-            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
-          ) : (
-            <Database className="w-5 h-5 text-amber-400 shrink-0 animate-pulse" />
-          )}
-          <span className="text-sm font-medium">{dbStatus}</span>
+  // Login Estático
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6 font-sans">
+        <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl max-w-md w-full">
+          <div className="flex justify-center mb-4">
+            <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+              <BookOpen className="w-12 h-12 text-blue-400" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-center mb-1">LEER+ Platform</h1>
+          <p className="text-slate-400 text-sm text-center mb-6">Seleccioná un rol simulado para ingresar</p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                Rol de Usuario
+              </label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+              >
+                <option value="Admin">Administrador</option>
+                <option value="Biblioteca">Biblioteca</option>
+                <option value="Editorial">Editorial</option>
+                <option value="LectoEscritor">LectoEscritor</option>
+              </select>
+            </div>
+
+            <button
+              onClick={() => setCurrentUser({ name: 'Usuario Demo', role: selectedRole })}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-lg transition-colors shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+            >
+              Ingresar como {selectedRole}
+            </button>
+          </div>
         </div>
       </div>
+    )
+  }
+
+  // Home Estático
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+      {/* Navbar Superior */}
+      <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <BookOpen className="w-8 h-8 text-blue-400" />
+          <span className="text-xl font-bold tracking-tight text-white">LEER+</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700">
+            <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold">
+              {currentUser.role[0]}
+            </div>
+            <span className="text-xs font-medium text-slate-300">{currentUser.role}</span>
+          </div>
+
+          <button
+            onClick={() => setCurrentUser(null)}
+            className="p-2 text-slate-400 hover:text-red-400 transition-colors rounded-lg hover:bg-slate-800"
+            title="Cerrar Sesión"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
+      </header>
+
+      {/* Menú de Opciones según el Rol */}
+      <nav className="bg-slate-900/50 border-b border-slate-800/80 px-6 py-2">
+        <div className="max-w-6xl mx-auto flex items-center gap-2 overflow-x-auto">
+          {navOptionsByRole[currentUser.role]?.map((option, idx) => {
+            const Icon = option.icon
+            return (
+              <button
+                key={idx}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  idx === 0 
+                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' 
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+
+      {/* Contenido Principal */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-6 flex flex-col gap-6">
+        {/* Barra de Búsqueda */}
+        <div className="relative">
+          <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input
+            type="text"
+            placeholder={`Buscar contenido para ${currentUser.role}...`}
+            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-blue-500/50 transition-colors text-slate-200 placeholder:text-slate-500"
+          />
+        </div>
+
+        {/* Área para el Feed */}
+        <div className="flex-1 border-2 border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center p-12 text-center bg-slate-900/20">
+          <BookOpen className="w-12 h-12 text-slate-700 mb-3" />
+          <h3 className="text-lg font-semibold text-slate-400 mb-1">
+            Vista del Rol: {currentUser.role}
+          </h3>
+          <p className="text-sm text-slate-600 max-w-md">
+            Lienzo listo para los componentes dinámicos de este rol.
+          </p>
+        </div>
+      </main>
     </div>
   )
 }
