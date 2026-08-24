@@ -215,7 +215,7 @@ export default function App() {
             Vista del Rol: {currentUser.role}
           </h3>
           <p className="text-sm text-slate-600 max-w-md">
-            Lienzo listo para los componentes dinámicos de este rol.
+            Lienzo para componentes dinámicos de este rol.
           </p>
         </div>
       </main>
