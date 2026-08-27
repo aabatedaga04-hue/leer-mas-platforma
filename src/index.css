@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+:root {
+  --color-brand-primary: #b9113f;
+  --color-brand-secondary: #a8636e;
+  --color-brand-mint: #97b59d;
+  --color-brand-sand: #cfcca8;
+  --color-brand-cream: #ffe3b3;
+}
