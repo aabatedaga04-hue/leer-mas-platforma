@@ -1,99 +1,124 @@
 import { useState } from 'react'
 
-// Import de componentes base de los 3 módulos
+// Importación del Logo Oficial desde assets
+import logoLeerMas from './assets/LEER+ LOGOS-03.png'
+
+// Componente Compartido Global
+import LandingPage from './components/LandingPage'
+
+// Archivos de Módulos (Features)
 import AuthModal from './features/usuarios/AuthModal'
 import CatalogoBuscador from './features/contenido/CatalogoBuscador'
 import GestionPrestamos from './features/bibliotecas/GestionPrestamos'
 
-// Reemplazá 'logo.svg' por tu archivo real en src/assets/
-import logoApp from './assets/LEER+ LOGOS-03.png' 
-
 export default function App() {
-  const [vistaActual, setVistaActual] = useState('catalogo')
+  const [usuario, setUsuario] = useState(null)
+  const [vistaActual, setVistaActual] = useState('landing')
 
   return (
-    <div className="min-h-screen bg-[#181619] text-[#ffe3b3] flex flex-col font-sans selection:bg-[#b9113f] selection:text-[#ffe3b3]">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-[var(--color-brand-primary)] selection:text-white">
       
-      {/* HEADER: BARRA DE NAVEGACIÓN SUPERIOR */}
-      <header className="bg-[#211d22] border-b border-[#a8636e]/20 px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-2xl">
+      {/* HEADER / BARRA DE NAVEGACIÓN */}
+      <header className="bg-slate-900/90 backdrop-blur border-b border-[var(--color-brand-secondary)]/30 px-6 py-3 flex justify-between items-center sticky top-0 z-50">
         
-        {/* Identidad de Marca */}
-        <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-[#b9113f]/10 border border-[#b9113f]/30 rounded-xl">
-            <img src={logoApp} alt="LEER+ Logo" className="h-8 w-auto object-contain" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black tracking-wider text-[#ffe3b3]">LEER+</h1>
-              <span className="text-[10px] bg-[#97b59d]/20 text-[#97b59d] px-2 py-0.5 rounded-full border border-[#97b59d]/30 font-semibold">v1.0</span>
-            </div>
-            <p className="text-xs text-[#cfcca8]/80 font-medium">Plataforma de Lectura y Escritura</p>
-          </div>
-        </div>
+        {/* LOGO CON IMAGEN Y NOMBRE */}
+        <button 
+          onClick={() => setVistaActual('landing')} 
+          className="flex items-center gap-3 hover:opacity-85 transition-opacity cursor-pointer"
+        >
+          <img 
+            src={logoLeerMas} 
+            alt="Logo LEER+" 
+            className="h-10 w-auto object-contain"
+          />
+          <span className="text-2xl font-black text-[var(--color-brand-primary)] tracking-wider">
+            LEER<span className="text-[var(--color-brand-cream)]">+</span>
+          </span>
+        </button>
 
-        {/* Selector de Módulos (Estilo Tabs) */}
-        <nav className="flex items-center bg-[#181619] p-1 rounded-2xl border border-[#a8636e]/20">
+        {/* NAVEGACIÓN PRINCIPAL */}
+        <nav className="flex gap-2 text-sm bg-slate-950/80 p-1.5 rounded-full border border-[var(--color-brand-secondary)]/30">
           <button 
-            onClick={() => setVistaActual('login')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
-              vistaActual === 'login' 
-                ? 'bg-[#b9113f] text-[#ffe3b3] shadow-lg shadow-[#b9113f]/30' 
-                : 'text-[#cfcca8] hover:text-[#ffe3b3] hover:bg-[#211d22]'
+            onClick={() => setVistaActual('landing')}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+              vistaActual === 'landing' 
+                ? 'bg-[var(--color-brand-primary)] text-white shadow-sm' 
+                : 'text-slate-400 hover:text-[var(--color-brand-cream)]'
             }`}
           >
-            Usuarios
+            Inicio
           </button>
-
+          
           <button 
             onClick={() => setVistaActual('catalogo')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
               vistaActual === 'catalogo' 
-                ? 'bg-[#b9113f] text-[#ffe3b3] shadow-lg shadow-[#b9113f]/30' 
-                : 'text-[#cfcca8] hover:text-[#ffe3b3] hover:bg-[#211d22]'
+                ? 'bg-[var(--color-brand-primary)] text-white shadow-sm' 
+                : 'text-slate-400 hover:text-[var(--color-brand-cream)]'
             }`}
           >
-            Contenido
+            Catálogo
           </button>
-
-          <button 
-            onClick={() => setVistaActual('prestamos')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
-              vistaActual === 'prestamos' 
-                ? 'bg-[#b9113f] text-[#ffe3b3] shadow-lg shadow-[#b9113f]/30' 
-                : 'text-[#cfcca8] hover:text-[#ffe3b3] hover:bg-[#211d22]'
-            }`}
-          >
-            Bibliotecas
-          </button>
+          
+          {usuario && (
+            <button 
+              onClick={() => setVistaActual('gestion-prestamos')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                vistaActual === 'gestion-prestamos' 
+                  ? 'bg-[var(--color-brand-primary)] text-white shadow-sm' 
+                  : 'text-slate-400 hover:text-[var(--color-brand-cream)]'
+              }`}
+            >
+              Gestión Préstamos
+            </button>
+          )}
         </nav>
+
+        {/* ÁREA DE SESIÓN */}
+        <div>
+          {usuario ? (
+            <div className="flex gap-3 items-center bg-slate-800/80 px-4 py-1.5 rounded-full border border-[var(--color-brand-secondary)]/40">
+              <span className="text-xs font-semibold text-[var(--color-brand-cream)] bg-[var(--color-brand-primary)]/40 px-2 py-0.5 rounded-md border border-[var(--color-brand-primary)]/50">
+                {usuario.rol || 'Usuario'}
+              </span>
+              <span className="text-sm font-medium text-slate-100">{usuario.nombre}</span>
+              <button 
+                onClick={() => { setUsuario(null); setVistaActual('landing'); }} 
+                className="text-red-400 hover:text-red-300 text-xs font-bold bg-red-950/40 hover:bg-red-950/80 px-2.5 py-1 rounded-full border border-red-900/40 transition-colors cursor-pointer"
+              >
+                Salir
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setVistaActual('login')} 
+              className="bg-[var(--color-brand-primary)] hover:opacity-90 text-white px-5 py-2 rounded-full text-sm font-semibold transition-all shadow-md active:scale-95 cursor-pointer"
+            >
+              Ingresar / Registrarse
+            </button>
+          )}
+        </div>
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-8 flex flex-col gap-6">
+      <main className="flex-1 p-6 max-w-6xl mx-auto w-full">
+        {vistaActual === 'landing' && (
+          <LandingPage onIngresar={() => setVistaActual('login')} />
+        )}
         
-        {/* Banner Informativo de Contexto */}
-        <div className="flex items-center justify-between bg-[#211d22] border border-[#a8636e]/30 rounded-xl px-5 py-3 text-xs">
-          <span className="text-[#cfcca8]">
-            Entorno de desarrollo base &bull; Cambiar de vista usando las pestañas superiores.
-          </span>
-          <span className="text-[#97b59d] font-mono">
-            Estado: {vistaActual.toUpperCase()}
-          </span>
-        </div>
-
-        {/* Tarjeta Contenedora Principal */}
-        <div className="bg-[#211d22] border border-[#a8636e]/20 rounded-2xl p-6 sm:p-8 shadow-2xl flex-1 backdrop-blur-sm">
-          {vistaActual === 'login' && <AuthModal />}
-          {vistaActual === 'catalogo' && <CatalogoBuscador />}
-          {vistaActual === 'prestamos' && <GestionPrestamos />}
-        </div>
+        {vistaActual === 'login' && (
+          <AuthModal onLoginSuccess={(u) => { setUsuario(u); setVistaActual('catalogo'); }} />
+        )}
+        
+        {vistaActual === 'catalogo' && (
+          <CatalogoBuscador />
+        )}
+        
+        {vistaActual === 'gestion-prestamos' && (
+          <GestionPrestamos />
+        )}
       </main>
 
-      {/* PIE DE PÁGINA */}
-      <footer className="border-t border-[#a8636e]/15 py-4 px-8 text-center text-xs text-[#cfcca8]/60 flex flex-col sm:flex-row justify-between items-center gap-2 max-w-7xl w-full mx-auto">
-        <span>LEER+ Platform &copy; 2026</span>
-        <span className="text-[#97b59d]">Conectando lectores, autores y bibliotecas</span>
-      </footer>
     </div>
   )
 }
