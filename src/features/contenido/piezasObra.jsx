@@ -13,11 +13,11 @@ import { TIPO_OBRA } from './catalogoApi'
 export function Estrellas({ valor, tamano = 14, mostrarNumero = true }) {
   const promedio = Number(valor ?? 0)
   const llenas = Math.round(promedio)
+  const sinCalificar = !promedio
 
-  if (!promedio) {
-    return <span className="text-xs text-slate-500">Sin calificaciones</span>
-  }
-
+  // Las cinco estrellas se dibujan siempre, también sin calificaciones: el
+  // promedio tiene que ser visible en todas las obras, y una obra sin calificar
+  // se lee como cinco estrellas vacías, no como la ausencia del indicador.
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className="flex" aria-hidden="true">
@@ -27,7 +27,7 @@ export function Estrellas({ valor, tamano = 14, mostrarNumero = true }) {
             size={tamano}
             className={
               posicion <= llenas
-                ? 'fill-[var(--color-brand-cream)] text-[var(--color-brand-cream)]'
+                ? 'fill-(--color-brand-cream) text-(--color-brand-cream)'
                 : 'text-slate-700'
             }
           />
@@ -35,8 +35,20 @@ export function Estrellas({ valor, tamano = 14, mostrarNumero = true }) {
       </span>
       {mostrarNumero && (
         <span className="text-xs font-medium text-slate-400">
-          <span className="sr-only">Calificación promedio: </span>
-          {promedio.toFixed(1)} de 5
+          {sinCalificar ? (
+            <span className="text-slate-500">Sin calificaciones</span>
+          ) : (
+            <>
+              <span className="sr-only">Calificación promedio: </span>
+              {promedio.toFixed(1)} de 5
+            </>
+          )}
+        </span>
+      )}
+      {/* Sin el número visible, el dato igual tiene que llegar al lector de pantalla. */}
+      {!mostrarNumero && (
+        <span className="sr-only">
+          {sinCalificar ? 'Sin calificaciones' : `Calificación: ${promedio.toFixed(1)} de 5`}
         </span>
       )}
     </span>
@@ -50,10 +62,12 @@ export function EtiquetaTipo({ tipo }) {
   return (
     <span
       className={`text-[0.65rem] font-semibold uppercase tracking-[0.14em] ${
-        esEscrito ? 'text-[var(--color-brand-mint)]' : 'text-[var(--color-brand-sand)]'
+        esEscrito ? 'text-(--color-brand-mint)' : 'text-(--color-brand-sand)'
       }`}
     >
-      {esEscrito ? 'Escrito de la comunidad' : 'Libro catalogado'}
+      {/* El estado de catalogación es interno: al lector solo le importa si es
+          un libro o un escrito de la comunidad. */}
+      {esEscrito ? 'Escrito de la comunidad' : 'Libro'}
     </span>
   )
 }
@@ -84,11 +98,11 @@ export function PortadaObra({ obra, className = 'h-24 w-16' }) {
       aria-label={`Sin portada disponible para ${obra.titulo}`}
       className={`${className} flex shrink-0 items-center justify-center rounded-sm ring-1 ring-slate-700/70 ${
         esEscrito
-          ? 'bg-gradient-to-br from-[var(--color-brand-primary)]/70 to-slate-900'
-          : 'bg-gradient-to-br from-[var(--color-brand-secondary)]/60 to-slate-900'
+          ? 'bg-linear-to-br from-(--color-brand-primary)/70 to-slate-900'
+          : 'bg-linear-to-br from-(--color-brand-secondary)/60 to-slate-900'
       }`}
     >
-      <span className="font-serif text-2xl text-[var(--color-brand-cream)]/80">{inicial}</span>
+      <span className="font-serif text-2xl text-(--color-brand-cream)/80">{inicial}</span>
     </div>
   )
 }

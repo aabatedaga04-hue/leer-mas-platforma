@@ -213,16 +213,25 @@ function anioDeVolumen(volumen) {
  * portada ni sinopsis, así que los huecos se rellenan con la edición más
  * completa del grupo. Queda el año correcto y los mejores datos disponibles.
  */
-function fusionarEdiciones(ediciones) {
+function fusionarEdiciones(ediciones, idiomaPreferido) {
   const masAntigua = ediciones.reduce((a, b) => (anioDeVolumen(b) < anioDeVolumen(a) ? b : a))
   const masCompleta = ediciones.reduce((a, b) => (puntajeDeVolumen(b) > puntajeDeVolumen(a) ? b : a))
 
-  if (masAntigua === masCompleta) return masAntigua
+  // La edición más antigua es la obra original, pero puede estar en otro idioma:
+  // la de 1846 de El conde de Montecristo es francesa. Para la sinopsis se
+  // prefiere una edición en el idioma pedido, sin tocar el año ni la identidad.
+  const enIdioma = idiomaPreferido
+    ? ediciones.find((e) => e.idioma === idiomaPreferido && e.sinopsis)
+    : null
+
+  const sinopsis = enIdioma?.sinopsis ?? masAntigua.sinopsis ?? masCompleta.sinopsis ?? null
+
+  if (masAntigua === masCompleta && sinopsis === masAntigua.sinopsis) return masAntigua
 
   return {
     ...masAntigua,
+    sinopsis,
     portadaUrl: masAntigua.portadaUrl ?? masCompleta.portadaUrl,
-    sinopsis: masAntigua.sinopsis ?? masCompleta.sinopsis,
     isbn: masAntigua.isbn ?? masCompleta.isbn,
     editorial: masAntigua.editorial ?? masCompleta.editorial,
     cantidadPaginas: masAntigua.cantidadPaginas ?? masCompleta.cantidadPaginas,
@@ -235,7 +244,7 @@ function fusionarEdiciones(ediciones) {
  * orden de relevancia de Google: el grupo queda donde aparecía su primer
  * integrante.
  */
-export function agruparEdiciones(volumenes) {
+export function agruparEdiciones(volumenes, { idiomaPreferido = null } = {}) {
   // Lista y no Map: la pertenencia al grupo depende de compartir un apellido con
   // los autores ya vistos, no de una clave exacta. Con el tope de 40 volúmenes
   // de la API, el costo cuadrático es irrelevante.
@@ -259,7 +268,7 @@ export function agruparEdiciones(volumenes) {
     grupo.ediciones.push(volumen)
   }
 
-  return grupos.map((g) => fusionarEdiciones(g.ediciones))
+  return grupos.map((g) => fusionarEdiciones(g.ediciones, idiomaPreferido))
 }
 
 /**
@@ -271,7 +280,7 @@ export function agruparEdiciones(volumenes) {
  */
 export async function buscarVolumenes(
   termino,
-  { maxResultados = 10, desde = 0, agrupar = true, signal } = {},
+  { maxResultados = 10, desde = 0, agrupar = true, idioma = 'es', signal } = {},
 ) {
   const consulta = termino?.trim()
   if (!consulta) return { total: 0, resultados: [] }
@@ -285,12 +294,18 @@ export async function buscarVolumenes(
       startIndex: desde,
       printType: 'books',
       orderBy: 'relevance',
+      // Prioriza ediciones en castellano, que son las que traen la sinopsis en
+      // castellano. No es una garantía: si de un libro no hay edición en ese
+      // idioma, Google devuelve igual las que tenga.
+      langRestrict: idioma,
     }),
     signal,
   )
 
   const normalizados = (datos.items ?? []).map(normalizarVolumen).filter(Boolean)
-  const resultados = agrupar ? agruparEdiciones(normalizados) : normalizados
+  const resultados = agrupar
+    ? agruparEdiciones(normalizados, { idiomaPreferido: idioma })
+    : normalizados
 
   return {
     total: datos.totalItems ?? 0,

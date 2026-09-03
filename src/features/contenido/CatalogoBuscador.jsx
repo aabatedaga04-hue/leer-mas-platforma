@@ -17,9 +17,19 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { AlertCircle, BookPlus, Check, Loader2, SearchX } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  BookPlus,
+  Check,
+  Loader2,
+  SearchX,
+} from 'lucide-react'
 
 import {
+  DIRECCION,
+  DIRECCION_POR_DEFECTO,
   ORDEN,
   RESULTADOS_POR_PAGINA,
   TIPO_OBRA,
@@ -39,16 +49,25 @@ const TIPOS = [
   { valor: TIPO_OBRA.LIBRO, etiqueta: 'Libros' },
 ]
 
+// Las etiquetas nombran el criterio, no el sentido: con el botón de dirección
+// "Más recientes" seria mentira al invertirlo.
 const ORDENES = [
-  { valor: ORDEN.TITULO, etiqueta: 'Título (A–Z)' },
-  { valor: ORDEN.RECIENTES, etiqueta: 'Más recientes' },
-  { valor: ORDEN.MEJOR_CALIFICADAS, etiqueta: 'Mejor calificadas' },
+  { valor: ORDEN.TITULO, etiqueta: 'Título' },
+  { valor: ORDEN.ANIO, etiqueta: 'Año de publicación' },
+  { valor: ORDEN.CALIFICACION, etiqueta: 'Calificación' },
 ]
+
+/** Cómo se lee cada criterio en cada sentido, para el botón que las invierte. */
+const SENTIDOS = {
+  [ORDEN.TITULO]: { asc: 'de la A a la Z', desc: 'de la Z a la A' },
+  [ORDEN.ANIO]: { asc: 'de la más antigua', desc: 'de la más reciente' },
+  [ORDEN.CALIFICACION]: { asc: 'de la peor calificada', desc: 'de la mejor calificada' },
+}
 
 const SUGERENCIAS_GOOGLE = 6
 
 const CLASES_FOCO =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-cream)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--color-brand-cream) focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
 
 const CLASES_CAMPO =
   `w-full rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 ` +
@@ -78,6 +97,8 @@ export default function CatalogoBuscador() {
   const genero = params.get('genero') ?? ''
   const tipo = params.get('tipo') ?? TIPO_OBRA.TODOS
   const orden = params.get('orden') ?? ORDEN.TITULO
+  // Cada criterio arranca con el sentido que se espera al elegirlo; el botón lo invierte.
+  const direccion = params.get('dir') ?? DIRECCION_POR_DEFECTO[orden] ?? DIRECCION.ASC
   const pagina = Math.max(1, Number(params.get('pagina') ?? 1) || 1)
 
   // Los campos de texto se escriben localmente y bajan a la URL con retraso,
@@ -160,7 +181,7 @@ export default function CatalogoBuscador() {
     setCargando(true)
     setError(null)
 
-    buscarObras({ titulo, autor, genero, tipo, orden, pagina, signal: controlador.signal })
+    buscarObras({ titulo, autor, genero, tipo, orden, direccion, pagina, signal: controlador.signal })
       .then((datos) => {
         setResultado(datos)
         setCargando(false)
@@ -173,7 +194,7 @@ export default function CatalogoBuscador() {
       })
 
     return () => controlador.abort()
-  }, [titulo, autor, genero, tipo, orden, pagina, intento])
+  }, [titulo, autor, genero, tipo, orden, direccion, pagina, intento])
 
   const hayTermino = Boolean(titulo.trim() || autor.trim())
 
@@ -238,20 +259,26 @@ export default function CatalogoBuscador() {
   // Descarta las ediciones que ya aparecen como obra local. El cruce por id de
   // Google no alcanza: una edición distinta del mismo libro trae otro id, así
   // que se compara título y autor.
-  const sugerenciasVisibles = useMemo(() => {
-    if (!esUltimaPagina) return []
-    return sugerencias
-      .filter(
-        (volumen) =>
-          !obras.some((obra) =>
-            esMismaObra({ titulo: obra.titulo, autor: obra.autor }, {
-              titulo: volumen.titulo,
-              autor: volumen.autorTexto,
-            }),
-          ),
-      )
-      .slice(0, SUGERENCIAS_GOOGLE)
-  }, [sugerencias, obras, esUltimaPagina])
+  const sugerenciasFiltradas = useMemo(
+    () =>
+      sugerencias
+        .filter(
+          (volumen) =>
+            !obras.some((obra) =>
+              esMismaObra({ titulo: obra.titulo, autor: obra.autor }, {
+                titulo: volumen.titulo,
+                autor: volumen.autorTexto,
+              }),
+            ),
+        )
+        .slice(0, SUGERENCIAS_GOOGLE),
+    [sugerencias, obras],
+  )
+
+  // Se listan al final de la última página, pero cuentan en el total desde la
+  // primera: si no, el recuento cambiaría al pasar de página.
+  const sugerenciasVisibles = esUltimaPagina ? sugerenciasFiltradas : []
+  const totalEncontrado = total + sugerenciasFiltradas.length
 
   const agregarAlCatalogo = useCallback(async (volumen) => {
     setEnProceso(volumen.googleBooksId)
@@ -277,11 +304,10 @@ export default function CatalogoBuscador() {
 
   return (
     <div className="space-y-8">
-      <header className="border-b border-[var(--color-brand-secondary)]/25 pb-5">
-        <h2 className="font-serif text-3xl text-[var(--color-brand-cream)]">Catálogo</h2>
+      <header className="border-b border-(--color-brand-secondary)/25 pb-5">
+        <h2 className="font-serif text-3xl text-(--color-brand-cream)">Catálogo</h2>
         <p className="mt-1.5 max-w-2xl text-sm text-slate-400">
-          Escritos autopublicados por la comunidad y libros catalogados. Si buscás algo que todavía
-          no está en el catálogo, igual lo vas a encontrar acá.
+          Escritos publicados por la comunidad y libros de todo el mundo
         </p>
       </header>
 
@@ -352,18 +378,45 @@ export default function CatalogoBuscador() {
             <label htmlFor="filtro-orden" className="mb-1.5 block text-sm font-medium text-slate-300">
               Ordenar por
             </label>
-            <select
-              id="filtro-orden"
-              value={orden}
-              onChange={(evento) => actualizarFiltro({ orden: evento.target.value })}
-              className={CLASES_CAMPO}
-            >
-              {ORDENES.map(({ valor, etiqueta }) => (
-                <option key={valor} value={valor}>
-                  {etiqueta}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select
+                id="filtro-orden"
+                value={orden}
+                onChange={(evento) =>
+                  // Al cambiar de criterio se vuelve a su sentido natural: la
+                  // dirección elegida para "Título" no significa lo mismo en "Año".
+                  actualizarFiltro({ orden: evento.target.value, dir: null })
+                }
+                className={CLASES_CAMPO}
+              >
+                {ORDENES.map(({ valor, etiqueta }) => (
+                  <option key={valor} value={valor}>
+                    {etiqueta}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={() =>
+                  actualizarFiltro({
+                    dir: direccion === DIRECCION.ASC ? DIRECCION.DESC : DIRECCION.ASC,
+                  })
+                }
+                // El ícono es decorativo: lo que se anuncia es el sentido actual
+                // y el título describe la acción del botón.
+                aria-label={`Orden ${SENTIDOS[orden][direccion]}. Invertir.`}
+                title={`Ordenado ${SENTIDOS[orden][direccion]}`}
+                className={`shrink-0 rounded-md border border-slate-700 px-3 text-slate-300 transition-colors hover:border-(--color-brand-secondary) hover:text-(--color-brand-cream) ${CLASES_FOCO}`}
+              >
+                {direccion === DIRECCION.ASC ? (
+                  <ArrowUpNarrowWide aria-hidden="true" className="size-4" />
+                ) : (
+                  <ArrowDownWideNarrow aria-hidden="true" className="size-4" />
+                )}
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">{SENTIDOS[orden][direccion]}</p>
           </div>
 
           {/* Radios reales: el navegador ya da navegación con flechas y anuncio de grupo. */}
@@ -375,9 +428,9 @@ export default function CatalogoBuscador() {
                 return (
                   <label
                     key={valor}
-                    className={`cursor-pointer rounded-full border px-4 py-1.5 text-sm transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--color-brand-cream)] has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-slate-950 ${
+                    className={`cursor-pointer rounded-full border px-4 py-1.5 text-sm transition-colors has-focus-visible:ring-2 has-focus-visible:ring-(--color-brand-cream) has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-slate-950 ${
                       activo
-                        ? 'border-[var(--color-brand-primary)] bg-[var(--color-brand-primary)] font-semibold text-white'
+                        ? 'border-(--color-brand-primary) bg-(--color-brand-primary) font-semibold text-white'
                         : 'border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
                     }`}
                   >
@@ -401,7 +454,7 @@ export default function CatalogoBuscador() {
               type="button"
               onClick={limpiarFiltros}
               disabled={!hayFiltros}
-              className={`rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:border-[var(--color-brand-secondary)] hover:text-[var(--color-brand-cream)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-700 disabled:hover:text-slate-300 ${CLASES_FOCO}`}
+              className={`rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:border-(--color-brand-secondary) hover:text-(--color-brand-cream) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-700 disabled:hover:text-slate-300 ${CLASES_FOCO}`}
             >
               Limpiar filtros
             </button>
@@ -422,13 +475,13 @@ export default function CatalogoBuscador() {
               ? 'Buscando obras…'
               : error
                 ? 'La búsqueda no se pudo completar.'
-                : total === 0 && sugerenciasVisibles.length === 0
+                : totalEncontrado === 0
                   ? 'Sin resultados.'
                   : [
-                      total > 0 && `${total} ${total === 1 ? 'obra' : 'obras'} en LEER+`,
+                      `${totalEncontrado} ${
+                        totalEncontrado === 1 ? 'obra encontrada' : 'obras encontradas'
+                      }`,
                       totalPaginas > 1 && `página ${pagina} de ${totalPaginas}`,
-                      sugerenciasVisibles.length > 0 &&
-                        `${sugerenciasVisibles.length} sin catalogar`,
                     ]
                       .filter(Boolean)
                       .join(' · ')}
@@ -436,7 +489,7 @@ export default function CatalogoBuscador() {
           {(cargando || cargandoSugerencias) && (
             <Loader2
               aria-hidden="true"
-              className="size-4 shrink-0 animate-spin text-[var(--color-brand-secondary)]"
+              className="size-4 shrink-0 animate-spin text-(--color-brand-secondary)"
             />
           )}
         </div>
@@ -454,7 +507,7 @@ export default function CatalogoBuscador() {
             <button
               type="button"
               onClick={() => setIntento((n) => n + 1)}
-              className={`mt-4 rounded-full bg-[var(--color-brand-primary)] px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 ${CLASES_FOCO}`}
+              className={`mt-4 rounded-full bg-(--color-brand-primary) px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 ${CLASES_FOCO}`}
             >
               Reintentar
             </button>
@@ -472,13 +525,13 @@ export default function CatalogoBuscador() {
             <p className="mt-1 text-sm text-slate-500">
               {hayFiltros
                 ? 'Probá con menos filtros o revisá la ortografía del título.'
-                : 'Buscá por título o autor para encontrar libros e incorporarlos.'}
+                : 'Buscá por título o autor para encontrar obras.'}
             </p>
             {hayFiltros && (
               <button
                 type="button"
                 onClick={limpiarFiltros}
-                className={`mt-4 rounded-full border border-[var(--color-brand-secondary)] px-5 py-2 text-sm font-medium text-[var(--color-brand-cream)] transition-colors hover:bg-[var(--color-brand-secondary)]/20 ${CLASES_FOCO}`}
+                className={`mt-4 rounded-full border border-(--color-brand-secondary) px-5 py-2 text-sm font-medium text-(--color-brand-cream) transition-colors hover:bg-(--color-brand-secondary)/20 ${CLASES_FOCO}`}
               >
                 Limpiar filtros
               </button>
@@ -497,18 +550,27 @@ export default function CatalogoBuscador() {
               <li key={`obra-${obra.id}`}>
                 <Link
                   to={`/obra/${obra.id}`}
-                  className={`group flex gap-4 border-l-2 border-transparent py-4 pl-4 pr-2 transition-colors hover:border-[var(--color-brand-primary)] hover:bg-slate-900/60 ${CLASES_FOCO}`}
+                  className={`group flex gap-4 border-l-2 border-transparent py-4 pl-4 pr-2 transition-colors hover:border-(--color-brand-primary) hover:bg-slate-900/60 ${CLASES_FOCO}`}
                 >
                   <PortadaObra obra={obra} />
 
                   <div className="min-w-0 flex-1">
                     <EtiquetaTipo tipo={obra.tipo} />
-                    <h4 className="mt-1 truncate font-serif text-lg text-[var(--color-brand-cream)] group-hover:underline">
+                    <h4 className="mt-1 truncate font-serif text-lg text-(--color-brand-cream) group-hover:underline">
                       {obra.titulo}
                     </h4>
                     <p className="mt-0.5 text-sm text-slate-400">
                       {obra.autor ?? (
                         <span className="italic text-slate-500">Autoría no disponible</span>
+                      )}
+                      {/* El año que se muestra es el de la obra, no el del alta
+                          en la plataforma. Los escritos no lo llevan: para ellos
+                          ambas fechas son la misma. */}
+                      {obra.fechaPublicacionOriginal && (
+                        <span className="text-slate-500">
+                          {' '}
+                          · {obra.fechaPublicacionOriginal.slice(0, 4)}
+                        </span>
                       )}
                     </p>
 
@@ -541,60 +603,81 @@ export default function CatalogoBuscador() {
               return (
                 <li
                   key={`google-${volumen.googleBooksId}`}
-                  className="flex gap-4 border-l-2 border-transparent py-4 pl-4 pr-2"
+                  className="flex border-l-2 border-transparent transition-colors hover:border-slate-600 hover:bg-slate-900/60"
                 >
-                  <PortadaObra
-                    obra={{
-                      titulo: volumen.titulo,
-                      portadaUrl: volumen.portadaUrl,
-                      tipo: TIPO_OBRA.LIBRO,
-                    }}
-                  />
+                  {/* El botón de agregar queda FUERA del enlace: un <button>
+                      dentro de un <a> es HTML inválido y rompe el teclado. */}
+                  <Link
+                    to={
+                      idObra ? `/obra/${idObra}` : `/obra/externa/${volumen.googleBooksId}`
+                    }
+                    // El volumen viaja ya fusionado para que la ficha no pierda
+                    // la portada o la sinopsis tomadas de otra edición.
+                    state={idObra ? undefined : { volumen }}
+                    className={`group flex min-w-0 flex-1 gap-4 py-4 pl-4 pr-2 ${CLASES_FOCO}`}
+                  >
+                    <PortadaObra
+                      obra={{
+                        titulo: volumen.titulo,
+                        portadaUrl: volumen.portadaUrl,
+                        tipo: TIPO_OBRA.LIBRO,
+                      }}
+                    />
 
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Sin catalogar
-                    </span>
-                    <h4 className="mt-1 font-serif text-lg text-slate-300">{volumen.titulo}</h4>
-                    <p className="mt-0.5 text-sm text-slate-400">
-                      {volumen.autorTexto ?? (
-                        <span className="italic text-slate-500">Autoría no informada</span>
-                      )}
-                      {volumen.fechaPublicacion && (
-                        <span className="text-slate-500">
-                          {' '}
-                          · {volumen.fechaPublicacion.slice(0, 4)}
-                        </span>
-                      )}
-                    </p>
-                    {volumen.sinopsis && (
-                      <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-slate-500">
-                        {volumen.sinopsis}
+                    <div className="min-w-0 flex-1">
+                      <EtiquetaTipo tipo={TIPO_OBRA.LIBRO} />
+                      <h4 className="mt-1 font-serif text-lg text-slate-300 group-hover:underline">
+                        {volumen.titulo}
+                      </h4>
+                      <p className="mt-0.5 text-sm text-slate-400">
+                        {volumen.autorTexto ?? (
+                          <span className="italic text-slate-500">Autoría no informada</span>
+                        )}
+                        {volumen.fechaPublicacion && (
+                          <span className="text-slate-500">
+                            {' '}
+                            · {volumen.fechaPublicacion.slice(0, 4)}
+                          </span>
+                        )}
                       </p>
-                    )}
-                    {falloAlta && (
-                      <p role="alert" className="mt-2 text-sm text-red-300">
-                        {falloAlta}
-                      </p>
-                    )}
-                  </div>
+                      {/* Mismo tratamiento que las obras del catálogo: el
+                          promedio se muestra siempre, y sin calificaciones lo
+                          dice en lugar de omitirse. */}
+                      <div className="mt-2">
+                        <Estrellas valor={0} />
+                      </div>
 
-                  <div className="flex shrink-0 items-start">
+                      {volumen.sinopsis && (
+                        <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-slate-500">
+                          {volumen.sinopsis}
+                        </p>
+                      )}
+                      {falloAlta && (
+                        <p role="alert" className="mt-2 text-sm text-red-300">
+                          {falloAlta}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* La acción de alta solo existe para quien tiene sesión. Sin
+                      ella no se muestra nada: un botón deshabilitado delataría
+                      que esta obra todavía no está en la base. */}
+                  <div className="flex shrink-0 items-start py-4 pr-2">
                     {idObra ? (
                       <Link
                         to={`/obra/${idObra}`}
-                        className={`inline-flex items-center gap-1.5 rounded-full border border-[var(--color-brand-mint)]/50 px-4 py-1.5 text-sm text-[var(--color-brand-mint)] transition-colors hover:bg-[var(--color-brand-mint)]/10 ${CLASES_FOCO}`}
+                        className={`inline-flex items-center gap-1.5 rounded-full border border-(--color-brand-mint)/50 px-4 py-1.5 text-sm text-(--color-brand-mint) transition-colors hover:bg-(--color-brand-mint)/10 ${CLASES_FOCO}`}
                       >
                         <Check aria-hidden="true" className="size-4" />
                         Ver ficha
                       </Link>
-                    ) : (
+                    ) : haySesion ? (
                       <button
                         type="button"
                         onClick={() => agregarAlCatalogo(volumen)}
-                        disabled={procesando || !haySesion}
-                        title={haySesion ? undefined : 'Necesitás iniciar sesión'}
-                        className={`inline-flex items-center gap-1.5 rounded-full border border-[var(--color-brand-secondary)] px-4 py-1.5 text-sm font-medium text-[var(--color-brand-cream)] transition-colors hover:bg-[var(--color-brand-secondary)]/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${CLASES_FOCO}`}
+                        disabled={procesando}
+                        className={`inline-flex items-center gap-1.5 rounded-full border border-(--color-brand-secondary) px-4 py-1.5 text-sm font-medium text-(--color-brand-cream) transition-colors hover:bg-(--color-brand-secondary)/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${CLASES_FOCO}`}
                       >
                         {procesando ? (
                           <Loader2 aria-hidden="true" className="size-4 animate-spin" />
@@ -602,9 +685,9 @@ export default function CatalogoBuscador() {
                           <BookPlus aria-hidden="true" className="size-4" />
                         )}
                         {procesando ? 'Agregando…' : 'Agregar'}
-                        <span className="sr-only"> {volumen.titulo} al catálogo</span>
+                        <span className="sr-only"> {volumen.titulo}</span>
                       </button>
-                    )}
+                    ) : null}
                   </div>
                 </li>
               )
@@ -618,11 +701,7 @@ export default function CatalogoBuscador() {
           </p>
         )}
 
-        {sugerenciasVisibles.length > 0 && !haySesion && (
-          <p className="pt-3 text-xs text-slate-500">
-            Para incorporar un libro al catálogo necesitás iniciar sesión.
-          </p>
-        )}
+
 
         {/* ---------- PAGINACIÓN (solo el catálogo local) ---------- */}
         {totalPaginas > 1 && !error && (
@@ -653,7 +732,7 @@ export default function CatalogoBuscador() {
                       aria-label={`Página ${numero}`}
                       className={`min-w-9 rounded-md px-3 py-1.5 text-sm transition-colors ${
                         numero === pagina
-                          ? 'bg-[var(--color-brand-primary)] font-semibold text-white'
+                          ? 'bg-(--color-brand-primary) font-semibold text-white'
                           : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
                       } ${CLASES_FOCO}`}
                     >
