@@ -6,4 +6,120 @@
   --color-brand-mint: #97b59d;
   --color-brand-sand: #cfcca8;
   --color-brand-cream: #ffe3b3;
+  --color-warm-ink: #160c11;
+  --color-warm-paper: #f5ead8;
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+  background: var(--color-warm-ink);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-warm-ink);
+  color: #fff8ed;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-editorial {
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.landing-v2 {
+  background:
+    radial-gradient(circle at 82% 8%, rgba(168, 99, 110, 0.14), transparent 28rem),
+    radial-gradient(circle at 6% 32%, rgba(151, 181, 157, 0.07), transparent 24rem),
+    var(--color-warm-ink);
+}
+
+.paper-section {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(255, 255, 255, 0.58), transparent 25rem),
+    repeating-linear-gradient(0deg, rgba(78, 44, 35, 0.018) 0, rgba(78, 44, 35, 0.018) 1px, transparent 1px, transparent 5px),
+    var(--color-warm-paper);
+}
+
+.paper-orbit {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid rgba(255, 227, 179, 0.07);
+  border-radius: 9999px;
+}
+
+.paper-orbit-one {
+  top: -22rem;
+  right: -16rem;
+  width: 50rem;
+  height: 50rem;
+}
+
+.paper-orbit-two {
+  bottom: -20rem;
+  left: -24rem;
+  width: 46rem;
+  height: 46rem;
+}
+
+.book-glow {
+  background: radial-gradient(circle, rgba(255, 227, 179, 0.12), transparent 68%);
+  filter: blur(16px);
+}
+
+.book-float {
+  animation: book-float 5s ease-in-out infinite;
+}
+
+.cta-rings {
+  pointer-events: none;
+  opacity: 0.28;
+  background:
+    radial-gradient(circle at 10% 110%, transparent 0 7rem, rgba(255, 227, 179, 0.34) 7.05rem 7.12rem, transparent 7.18rem),
+    radial-gradient(circle at 92% -20%, transparent 0 10rem, rgba(255, 227, 179, 0.3) 10.05rem 10.12rem, transparent 10.18rem);
+}
+
+.focus-brand:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-warm-ink), 0 0 0 5px var(--color-brand-cream);
+}
+
+@keyframes book-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .book-float {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
