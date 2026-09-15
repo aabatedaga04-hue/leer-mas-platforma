@@ -1,18 +1,19 @@
-import { BookOpenText } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 import logoLeerMas from '../assets/LEER+ LOGOS-03.png'
 
 export default function PiePagina() {
   return (
-    <footer className="border-t border-(--color-brand-cream)/10 bg-[#12090d] px-5 py-10 sm:px-8 lg:px-10">
-      <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
-          <img src={logoLeerMas} alt="LEER+" className="h-10 w-auto" />
-          <p className="max-w-xs border-l border-(--color-brand-cream)/12 pl-4 text-xs leading-5 text-[#9f8988]">Un espacio común para descubrir, publicar y compartir historias.</p>
+    <footer className="border-t border-[#cbbdad] bg-[#eee5d8] text-[#24171a]">
+      <div className="mx-auto grid max-w-[1500px] sm:grid-cols-[1fr_auto]">
+        <div className="flex items-center gap-3 px-5 py-8 sm:px-8">
+          <img src={logoLeerMas} alt="" className="h-8 w-auto" />
+          <span className="text-lg font-black tracking-[-0.04em]">LEER<span className="text-(--color-brand-primary)">+</span></span>
+          <span className="ml-2 hidden border-l border-[#cbbdad] pl-4 text-xs text-[#7c6661] sm:block">Las historias siguen cuando se comparten.</span>
         </div>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-[#9f8988]">
-          <span className="flex items-center gap-2"><BookOpenText className="size-4 text-(--color-brand-secondary)" aria-hidden="true" />Fundación Literaria Comunitaria</span>
-          <span>Proyecto Final · 2026</span>
-        </div>
+        <a href="#top" className="group flex items-center justify-between gap-8 border-t border-[#cbbdad] px-5 py-5 text-[10px] font-bold uppercase tracking-[0.18em] transition hover:bg-[#e5dacb] sm:border-t-0 sm:border-l sm:px-8">
+          Volver arriba
+          <ArrowUp className="size-4 transition-transform group-hover:-translate-y-1" aria-hidden="true" />
+        </a>
       </div>
     </footer>
   )

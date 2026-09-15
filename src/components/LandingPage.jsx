@@ -1,248 +1,282 @@
 import {
+  ArrowDown,
   ArrowRight,
-  BookHeart,
+  ArrowUpRight,
+  BookMarked,
   BookOpenText,
   Bookmark,
   Building2,
+  Feather,
   LibraryBig,
-  MessageCircleHeart,
-  PenLine,
+  MessagesSquare,
   Search,
-  Sparkles,
-  UsersRound,
 } from 'lucide-react'
 
-const perfiles = [
+const puertas = [
   {
-    titulo: 'Lectores',
-    descripcion: 'Descubrí nuevas historias, armá tus listas y compartí cada lectura con la comunidad.',
-    icono: BookOpenText,
-    tono: 'bordo',
+    numero: '01',
+    perfil: 'Soy lector',
+    accion: 'Busco mi próxima lectura',
+    tono: 'bg-(--color-brand-primary)',
+    destino: 'catalogo',
   },
   {
-    titulo: 'Autores',
-    descripcion: 'Publicá tus escritos, construí tu perfil y acercá tu voz a quienes buscan algo nuevo.',
-    icono: PenLine,
-    tono: 'verde',
+    numero: '02',
+    perfil: 'Soy autor',
+    accion: 'Quiero compartir una obra',
+    tono: 'bg-(--color-brand-mint)',
+    destino: 'ingreso',
   },
   {
-    titulo: 'Bibliotecas',
-    descripcion: 'Conectá tu catálogo físico, organizá ejemplares y acompañá el recorrido de tus lectores.',
+    numero: '03',
+    perfil: 'Represento una biblioteca',
+    accion: 'Quiero conectar mi catálogo',
+    tono: 'bg-(--color-brand-sand)',
+    destino: 'ingreso',
+  },
+  {
+    numero: '04',
+    perfil: 'Soy editorial',
+    accion: 'Quiero descubrir nuevas voces',
+    tono: 'bg-(--color-brand-secondary)',
+    destino: 'ingreso',
+  },
+]
+
+const participantes = [
+  {
+    clase: 'mapa-lector',
+    numero: '01',
+    titulo: 'Lector',
+    descripcion: 'Descubre, guarda y recomienda.',
+    icono: BookMarked,
+  },
+  {
+    clase: 'mapa-autor',
+    numero: '02',
+    titulo: 'Autor',
+    descripcion: 'Publica y encuentra a su audiencia.',
+    icono: Feather,
+  },
+  {
+    clase: 'mapa-biblioteca',
+    numero: '03',
+    titulo: 'Biblioteca',
+    descripcion: 'Acerca sus ejemplares a la comunidad.',
     icono: LibraryBig,
-    tono: 'arena',
   },
   {
-    titulo: 'Editoriales',
-    descripcion: 'Encontrá autores emergentes, recomendá obras y observá tendencias de la comunidad.',
+    clase: 'mapa-editorial',
+    numero: '04',
+    titulo: 'Editorial',
+    descripcion: 'Observa tendencias y nuevas voces.',
     icono: Building2,
-    tono: 'rosa',
   },
 ]
 
 const recorrido = [
   {
     numero: '01',
-    titulo: 'Encontrá tu próxima historia',
-    descripcion: 'Buscá por título, autor o género y conocé la disponibilidad en bibliotecas asociadas.',
+    verbo: 'Encontrar',
+    titulo: 'Una búsqueda que entiende de libros.',
+    descripcion: 'Explorá por título, autor o género y conocé dónde está disponible cada obra.',
+    detalle: 'Catálogo + disponibilidad',
     icono: Search,
   },
   {
     numero: '02',
-    titulo: 'Hacé tuyo el recorrido',
-    descripcion: 'Guardá obras, registrá tu progreso y sumate a desafíos que sostienen el hábito lector.',
+    verbo: 'Guardar',
+    titulo: 'Tu recorrido queda con vos.',
+    descripcion: 'Armá listas, registrá avances y construí una biblioteca personal que crece a tu ritmo.',
+    detalle: 'Listas + progreso',
     icono: Bookmark,
   },
   {
     numero: '03',
-    titulo: 'Leé en comunidad',
-    descripcion: 'Compartí reseñas y conversaciones que ayudan a que cada obra encuentre nuevos lectores.',
-    icono: UsersRound,
+    verbo: 'Conversar',
+    titulo: 'La lectura continúa después del punto final.',
+    descripcion: 'Compartí reseñas y conversaciones para que una historia llegue a su próximo lector.',
+    detalle: 'Reseñas + comunidad',
+    icono: MessagesSquare,
   },
 ]
 
-const estilosTono = {
-  bordo: 'bg-(--color-brand-primary)/12 text-(--color-brand-primary) border-(--color-brand-primary)/20',
-  verde: 'bg-(--color-brand-mint)/25 text-[#55745f] border-(--color-brand-mint)/45',
-  arena: 'bg-(--color-brand-sand)/35 text-[#6f6840] border-(--color-brand-sand)/60',
-  rosa: 'bg-(--color-brand-secondary)/15 text-[#8b4652] border-(--color-brand-secondary)/30',
+function PuertaDeEntrada({ puerta, onIngresar, onExplorar }) {
+  const entrar = puerta.destino === 'catalogo' ? onExplorar : onIngresar
+
+  return (
+    <button type="button" onClick={entrar} className="puerta group w-full text-left">
+      <span className={`mt-1 size-2.5 shrink-0 ${puerta.tono}`} aria-hidden="true" />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#846d67]">
+          {puerta.numero} · {puerta.perfil}
+        </span>
+        <span className="mt-1 block font-editorial text-lg leading-tight text-[#24171a] sm:text-xl">
+          {puerta.accion}
+        </span>
+      </span>
+      <ArrowUpRight className="mt-2 size-4 shrink-0 text-(--color-brand-primary) transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+    </button>
+  )
 }
 
-function BibliotecaVisual() {
+function MapaDelEcosistema() {
   return (
-    <div className="relative mx-auto w-full max-w-[520px]" aria-label="Una biblioteca cálida que reúne a la comunidad de LEER+">
-      <div className="book-glow absolute -inset-10 rounded-full" />
+    <div className="ecosistema-mapa" aria-label="Una obra conecta a lectores, autores, bibliotecas y editoriales">
+      <svg className="mapa-conexiones" viewBox="0 0 900 680" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M450 340 C340 300 280 190 165 120" />
+        <path d="M450 340 C560 300 620 190 735 120" />
+        <path d="M450 340 C340 390 280 500 165 560" />
+        <path d="M450 340 C560 390 620 500 735 560" />
+      </svg>
 
-      <div className="relative overflow-hidden rounded-[2.25rem] border border-(--color-brand-cream)/15 bg-[#211319]/92 p-5 shadow-[0_35px_90px_rgba(20,7,12,0.42)] sm:p-7">
-        <div className="mb-10 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-(--color-brand-sand)/70">
-          <span>Tu espacio de lectura</span>
-          <Sparkles className="size-4 text-(--color-brand-cream)" aria-hidden="true" />
+      <div className="libro-central">
+        <div className="pagina pagina-izquierda">
+          <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-(--color-brand-primary)">Una obra</span>
+          <BookOpenText className="mt-auto size-7 text-(--color-brand-primary)" aria-hidden="true" />
         </div>
-
-        <div className="relative mx-auto h-[286px] max-w-[390px] sm:h-[330px]">
-          <div className="absolute inset-x-2 bottom-0 h-3 rounded-full bg-[#12090d] shadow-[0_14px_28px_rgba(0,0,0,0.55)]" />
-
-          <div className="absolute bottom-3 left-[6%] h-[240px] w-[30%] rotate-[-5deg] rounded-r-xl rounded-l-sm bg-(--color-brand-primary) p-4 shadow-2xl sm:h-[276px]">
-            <div className="h-full border-l border-(--color-brand-cream)/25 pl-3">
-              <p className="font-editorial text-lg leading-tight text-(--color-brand-cream) sm:text-xl">Historias que encuentran lectores</p>
-              <span className="absolute bottom-5 left-7 text-[10px] uppercase tracking-[0.2em] text-white/65">LEER+</span>
-            </div>
-          </div>
-
-          <div className="absolute bottom-3 left-[34%] z-10 h-[260px] w-[31%] rotate-[2deg] rounded-r-xl rounded-l-sm bg-(--color-brand-cream) p-4 text-[#28171c] shadow-2xl sm:h-[302px]">
-            <div className="flex h-full flex-col justify-between border-l border-(--color-brand-secondary)/35 pl-3">
-              <BookHeart className="size-7 text-(--color-brand-primary)" aria-hidden="true" />
-              <p className="font-editorial text-xl leading-tight sm:text-2xl">Un lugar para cada forma de leer.</p>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[#7c565d]">Comunidad literaria</span>
-            </div>
-          </div>
-
-          <div className="absolute bottom-3 right-[4%] h-[226px] w-[30%] rotate-[7deg] rounded-r-xl rounded-l-sm bg-(--color-brand-mint) p-4 text-[#23352a] shadow-2xl sm:h-[262px]">
-            <div className="h-full border-l border-white/25 pl-3">
-              <p className="font-editorial text-lg leading-tight sm:text-xl">Bibliotecas, autores y comunidad</p>
-              <span className="absolute bottom-5 left-7 text-[10px] uppercase tracking-[0.2em] text-[#314b39]/70">En un mismo estante</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-(--color-brand-cream)/10 pt-5 text-sm text-(--color-brand-sand)">
-          <span className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-(--color-brand-mint)" />
-            Catálogo y comunidad conectados
-          </span>
-          <span className="font-semibold text-(--color-brand-cream)">LEER+</span>
+        <div className="pagina pagina-derecha">
+          <p className="font-editorial text-xl leading-tight text-[#2c1c20] sm:text-2xl">se vuelve encuentro cuando circula.</p>
+          <span className="mt-auto text-[9px] uppercase tracking-[0.18em] text-[#88716b]">LEER+</span>
         </div>
       </div>
 
-      <div className="book-float absolute -bottom-6 -left-3 z-20 hidden items-center gap-3 rounded-2xl border border-[#d8c7ad] bg-[#fff8ed] px-4 py-3 text-[#3a242a] shadow-xl sm:flex">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-(--color-brand-primary)/10">
-          <MessageCircleHeart className="size-4 text-(--color-brand-primary)" aria-hidden="true" />
-        </span>
-        <span>
-          <span className="block text-xs text-[#84676d]">Una comunidad</span>
-          <span className="block text-sm font-semibold">alrededor de los libros</span>
-        </span>
-      </div>
+      {participantes.map(({ clase, numero, titulo, descripcion, icono: Icono }) => (
+        <article key={titulo} className={`mapa-nodo ${clase}`}>
+          <div className="flex items-start justify-between gap-4">
+            <span className="text-[10px] font-bold tracking-[0.18em] text-(--color-brand-primary)">{numero}</span>
+            <Icono className="size-5 text-[#765e58]" strokeWidth={1.6} aria-hidden="true" />
+          </div>
+          <h3 className="font-editorial mt-5 text-2xl font-semibold text-[#24171a]">{titulo}</h3>
+          <p className="mt-1 text-sm leading-6 text-[#725d59]">{descripcion}</p>
+        </article>
+      ))}
     </div>
   )
 }
 
 export default function LandingPage({ onIngresar, onExplorar }) {
   return (
-    <div className="landing-v2">
-      <section className="relative isolate overflow-hidden px-5 pb-24 pt-16 sm:px-8 sm:pt-20 lg:px-10 lg:pb-28 lg:pt-24">
-        <div className="paper-orbit paper-orbit-one" />
-        <div className="paper-orbit paper-orbit-two" />
+    <div id="top" className="landing-v3">
+      <section className="portada-lectura relative isolate overflow-hidden border-b border-[#cbbdad]">
+        <div className="numero-portada" aria-hidden="true">+</div>
+        <div className="mx-auto grid min-h-[calc(100vh-72px)] max-w-[1500px] lg:grid-cols-[96px_minmax(0,1fr)_410px]">
+          <aside className="margen-portada hidden border-r border-[#cbbdad] lg:flex">
+            <span>LEER MÁS</span>
+            <span>COMUNIDAD LITERARIA · ARGENTINA</span>
+          </aside>
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-[1.04fr_0.96fr] lg:gap-12">
-          <div className="max-w-2xl">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-(--color-brand-secondary)/25 bg-(--color-brand-cream)/7 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-(--color-brand-cream)">
-              <BookOpenText className="size-4" aria-hidden="true" />
-              Ecosistema literario argentino
+          <div className="relative flex flex-col justify-between px-5 py-12 sm:px-10 sm:py-16 lg:px-14 lg:py-14 xl:px-20">
+            <div className="flex items-center justify-between border-b border-[#cbbdad] pb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-[#7e6863]">
+              <span>Página de inicio</span>
+              <span>Edición 01 — 2026</span>
             </div>
 
-            <h1 className="font-editorial text-balance text-5xl leading-[0.98] font-semibold tracking-[-0.035em] text-[#fff8ed] sm:text-6xl lg:text-[5.2rem]">
-              Donde las historias encuentran su{' '}
-              <span className="text-(--color-brand-cream)">comunidad.</span>
-            </h1>
+            <div className="max-w-[760px] py-16 sm:py-20 lg:py-12">
+              <p className="mb-6 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-(--color-brand-primary)">
+                <span className="h-px w-10 bg-(--color-brand-primary)" />
+                Todo empieza con una historia
+              </p>
+              <h1 className="font-editorial text-[clamp(3.5rem,7.4vw,7.4rem)] leading-[0.86] font-semibold tracking-[-0.055em] text-[#211416]">
+                Un libro es<br />un punto de<br /><span className="palabra-encuentro">encuentro.</span>
+              </h1>
+              <p className="mt-9 max-w-xl text-base leading-7 text-[#6e5855] sm:text-lg sm:leading-8">
+                LEER+ conecta las historias con quienes las escriben, las buscan, las cuidan y las hacen circular.
+              </p>
 
-            <p className="mt-7 max-w-xl text-lg leading-8 text-[#dccbc3] sm:text-xl">
-              LEER+ reúne lectores, autores, bibliotecas y editoriales en un espacio pensado para descubrir, compartir y acompañar cada recorrido de lectura.
-            </p>
-
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={onExplorar}
-                className="focus-brand group inline-flex items-center justify-center gap-2 rounded-full bg-(--color-brand-primary) px-7 py-3.5 text-sm font-bold text-white shadow-[0_14px_35px_rgba(185,17,63,0.3)] transition hover:-translate-y-0.5 hover:bg-[#cf1748]"
-              >
-                Explorar el catálogo
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-              </button>
-              <a
-                href="#ecosistema"
-                className="focus-brand inline-flex items-center justify-center rounded-full border border-(--color-brand-cream)/25 bg-white/5 px-7 py-3.5 text-sm font-semibold text-(--color-brand-cream) transition hover:border-(--color-brand-cream)/45 hover:bg-white/8"
-              >
-                Conocer la plataforma
-              </a>
+              <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
+                <button type="button" onClick={onExplorar} className="boton-recorte group inline-flex items-center gap-4 bg-(--color-brand-primary) px-6 py-4 text-sm font-bold text-white transition hover:bg-[#991035]">
+                  Encontrar una historia
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                </button>
+                <button type="button" onClick={onIngresar} className="enlace-editorial group inline-flex items-center gap-2 py-2 text-sm font-bold text-[#392629]">
+                  Crear mi espacio
+                  <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+                </button>
+              </div>
             </div>
 
-            <div className="mt-11 flex flex-wrap gap-x-7 gap-y-3 border-t border-(--color-brand-cream)/10 pt-6 text-sm text-[#bea9a4]">
-              <span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-(--color-brand-mint)" />Catálogo vivo</span>
-              <span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-(--color-brand-sand)" />Autores emergentes</span>
-              <span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-(--color-brand-secondary)" />Bibliotecas conectadas</span>
-            </div>
+            <a href="#ecosistema" className="group flex w-fit items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#806b65]">
+              <span className="flex size-8 items-center justify-center border border-[#aa9990] transition group-hover:border-(--color-brand-primary) group-hover:text-(--color-brand-primary)">
+                <ArrowDown className="size-3.5" aria-hidden="true" />
+              </span>
+              Abrir la página
+            </a>
           </div>
 
-          <BibliotecaVisual />
-        </div>
-      </section>
-
-      <section id="ecosistema" className="paper-section scroll-mt-24 px-5 py-20 text-[#2d1b21] sm:px-8 lg:px-10 lg:py-28">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 border-b border-[#cdbba4] pb-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+          <aside className="entrada-por-perfil border-t border-[#cbbdad] px-5 py-10 sm:px-10 lg:border-t-0 lg:border-l lg:px-8 lg:py-14">
+            <div className="flex items-center justify-between border-b border-[#aa9990] pb-4">
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.2em] text-(--color-brand-primary)">Entrada directa</span>
+                <h2 className="font-editorial mt-1 text-2xl text-[#24171a]">¿Cómo querés entrar?</h2>
+              </div>
+              <span className="font-editorial text-4xl text-[#c6b7a7]" aria-hidden="true">↳</span>
+            </div>
             <div>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-(--color-brand-primary)">Un mismo ecosistema</span>
-              <h2 className="font-editorial mt-3 text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">Cuatro maneras de formar parte.</h2>
+              {puertas.map((puerta) => (
+                <PuertaDeEntrada key={puerta.numero} puerta={puerta} onIngresar={onIngresar} onExplorar={onExplorar} />
+              ))}
             </div>
-            <p className="max-w-2xl text-base leading-7 text-[#735b60] lg:justify-self-end lg:text-lg">
-              Cada perfil tiene su propio recorrido, pero todos se encuentran alrededor de las obras y de las conversaciones que nacen de ellas.
+            <p className="mt-8 max-w-xs text-xs leading-5 text-[#806b65]">
+              Sin recorridos genéricos: cada persona llega primero a lo que vino a hacer.
             </p>
-          </div>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {perfiles.map(({ titulo, descripcion, icono: Icono, tono }) => (
-              <article key={titulo} className="group rounded-[1.6rem] border border-[#d9c9b4] bg-[#fffaf1]/85 p-6 transition duration-300 hover:-translate-y-1 hover:border-[#bca38a] hover:shadow-[0_18px_42px_rgba(71,42,34,0.1)]">
-                <span className={`mb-8 flex size-12 items-center justify-center rounded-2xl border ${estilosTono[tono]}`}>
-                  <Icono className="size-5" aria-hidden="true" />
-                </span>
-                <h3 className="font-editorial text-2xl font-semibold">{titulo}</h3>
-                <p className="mt-3 text-sm leading-6 text-[#745f62]">{descripcion}</p>
-              </article>
-            ))}
-          </div>
+          </aside>
         </div>
       </section>
 
-      <section id="recorrido" className="relative overflow-hidden px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-2xl">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-(--color-brand-mint)">Simple desde el comienzo</span>
-            <h2 className="font-editorial mt-3 text-4xl leading-tight font-semibold text-[#fff8ed] sm:text-5xl">Tu recorrido, en un solo lugar.</h2>
-            <p className="mt-5 text-lg leading-7 text-[#cbb8b3]">La tecnología acompaña la experiencia sin ponerse por delante de los libros.</p>
-          </div>
+      <section id="ecosistema" className="scroll-mt-20 border-b border-[#cbbdad] bg-[#f7f1e7] px-5 py-20 sm:px-10 lg:px-14 lg:py-28">
+        <div className="mx-auto grid max-w-[1320px] gap-14 lg:grid-cols-[310px_minmax(0,1fr)] lg:gap-16">
+          <header className="lg:pt-12">
+            <span className="indice-seccion">02 / EL ECOSISTEMA</span>
+            <h2 className="font-editorial mt-6 text-4xl leading-[1.02] font-semibold tracking-[-0.035em] text-[#24171a] sm:text-5xl">
+              No son cuatro mundos.
+              <span className="mt-2 block text-(--color-brand-primary)">Es una misma historia.</span>
+            </h2>
+            <p className="mt-6 text-base leading-7 text-[#705b57]">
+              El centro no es la plataforma: es la obra. LEER+ organiza alrededor de ella todo lo que cada participante necesita.
+            </p>
+          </header>
 
-          <div className="mt-12 grid gap-px overflow-hidden rounded-[2rem] border border-(--color-brand-cream)/10 bg-(--color-brand-cream)/10 lg:grid-cols-3">
-            {recorrido.map(({ numero, titulo, descripcion, icono: Icono }) => (
-              <article key={numero} className="group bg-[#1b1015] p-7 sm:p-9">
-                <div className="flex items-center justify-between">
-                  <span className="font-editorial text-lg text-(--color-brand-secondary)">{numero}</span>
-                  <span className="flex size-11 items-center justify-center rounded-full border border-(--color-brand-cream)/12 bg-(--color-brand-cream)/5 text-(--color-brand-cream) transition group-hover:border-(--color-brand-mint)/35 group-hover:text-(--color-brand-mint)">
-                    <Icono className="size-5" aria-hidden="true" />
-                  </span>
+          <MapaDelEcosistema />
+        </div>
+      </section>
+
+      <section id="recorrido" className="bg-[#eee5d8] px-5 py-20 sm:px-10 lg:px-14 lg:py-28">
+        <div className="mx-auto grid max-w-[1320px] gap-12 lg:grid-cols-[310px_minmax(0,1fr)] lg:gap-16">
+          <header className="lg:sticky lg:top-28 lg:self-start">
+            <span className="indice-seccion">03 / EL RECORRIDO</span>
+            <h2 className="font-editorial mt-6 text-4xl leading-tight font-semibold tracking-[-0.035em] text-[#24171a] sm:text-5xl">Simple para que leer siga siendo lo importante.</h2>
+            <p className="mt-6 text-base leading-7 text-[#705b57]">Tres movimientos, sin ruido alrededor.</p>
+          </header>
+
+          <div className="hilo-lectura">
+            {recorrido.map(({ numero, verbo, titulo, descripcion, detalle, icono: Icono }) => (
+              <article key={numero} className="paso-lectura group">
+                <div className="paso-marca">
+                  <span>{numero}</span>
+                  <span className="paso-punto"><Icono className="size-4" strokeWidth={1.7} aria-hidden="true" /></span>
                 </div>
-                <h3 className="font-editorial mt-12 text-2xl font-semibold text-[#fff8ed]">{titulo}</h3>
-                <p className="mt-4 text-sm leading-6 text-[#bca7a3]">{descripcion}</p>
+                <div className="pb-12 sm:pb-16">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-(--color-brand-primary)">{verbo}</span>
+                  <h3 className="font-editorial mt-3 max-w-2xl text-3xl leading-tight font-semibold text-[#24171a] sm:text-4xl">{titulo}</h3>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+                    <p className="max-w-xl text-sm leading-6 text-[#705b57] sm:text-base sm:leading-7">{descripcion}</p>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#8b756e]">{detalle}</span>
+                  </div>
+                </div>
               </article>
             ))}
-          </div>
-        </div>
-      </section>
 
-      <section className="px-5 pb-20 sm:px-8 lg:px-10 lg:pb-28">
-        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-(--color-brand-primary) px-6 py-12 text-center shadow-[0_28px_75px_rgba(81,7,29,0.35)] sm:px-10 lg:py-16">
-          <div className="cta-rings absolute inset-0" />
-          <div className="relative mx-auto max-w-2xl">
-            <BookHeart className="mx-auto size-8 text-(--color-brand-cream)" aria-hidden="true" />
-            <h2 className="font-editorial mt-5 text-4xl font-semibold leading-tight text-white sm:text-5xl">Hay una historia esperando encontrarte.</h2>
-            <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-[#ffe2d7]">Creá tu espacio en LEER+ y empezá a construir un recorrido de lectura propio y compartido.</p>
-            <button
-              type="button"
-              onClick={onIngresar}
-              className="focus-brand mt-8 inline-flex items-center gap-2 rounded-full bg-(--color-brand-cream) px-7 py-3.5 text-sm font-bold text-[#5d1129] transition hover:-translate-y-0.5 hover:bg-white"
-            >
-              Ingresar o crear una cuenta
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </button>
+            <div className="cierre-recorrido">
+              <span className="font-editorial text-6xl text-(--color-brand-primary) sm:text-7xl" aria-hidden="true">+</span>
+              <div>
+                <p className="font-editorial text-3xl leading-tight font-semibold text-[#24171a] sm:text-4xl">Tu próxima página puede empezar acá.</p>
+                <button type="button" onClick={onIngresar} className="enlace-editorial group mt-5 inline-flex items-center gap-3 py-2 text-sm font-bold text-[#392629]">
+                  Ingresar o crear una cuenta
+                  <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>

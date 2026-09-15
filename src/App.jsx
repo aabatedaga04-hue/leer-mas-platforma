@@ -24,7 +24,9 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#160c11] font-sans text-slate-100 selection:bg-(--color-brand-primary) selection:text-white">
+    <div className={`flex min-h-screen flex-col font-sans selection:bg-(--color-brand-primary) selection:text-white ${
+      ubicacion.pathname === '/' ? 'bg-[#f4ede2] text-[#24171a]' : 'bg-slate-950 text-slate-100'
+    }`}>
       <EncabezadoPrincipal usuario={usuario} onCerrarSesion={cerrarSesion} />
 
       {/* CONTENIDO PRINCIPAL */}
