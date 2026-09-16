@@ -17,6 +17,8 @@ export default function App() {
   const [usuario, setUsuario] = useState(null)
   const navegar = useNavigate()
   const ubicacion = useLocation()
+  const esInicio = ubicacion.pathname === '/'
+  const usaFondoEditorial = esInicio || ubicacion.pathname === '/catalogo' || ubicacion.pathname === '/ingresar'
 
   const cerrarSesion = () => {
     setUsuario(null)
@@ -25,12 +27,18 @@ export default function App() {
 
   return (
     <div className={`flex min-h-screen flex-col font-sans selection:bg-(--color-brand-primary) selection:text-white ${
-      ubicacion.pathname === '/' ? 'bg-[#f4ede2] text-[#24171a]' : 'bg-slate-950 text-slate-100'
+      usaFondoEditorial ? 'bg-[#f4ede2] text-[#24171a]' : 'bg-slate-950 text-slate-100'
     }`}>
       <EncabezadoPrincipal usuario={usuario} onCerrarSesion={cerrarSesion} />
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className={ubicacion.pathname === '/' ? 'flex-1' : 'mx-auto w-full max-w-6xl flex-1 p-6'}>
+      <main className={
+        esInicio || ubicacion.pathname === '/ingresar'
+          ? 'w-full flex-1'
+          : ubicacion.pathname === '/catalogo'
+            ? 'mx-auto w-full max-w-[1320px] flex-1 px-5 py-10 sm:px-8 lg:px-10 lg:py-14'
+            : 'mx-auto w-full max-w-6xl flex-1 p-6'
+      }>
         {/* Contiene los fallos de render: sin esto, una excepción en cualquier
             vista deja la pantalla en blanco sin explicación. */}
         <LimiteDeError claveReinicio={ubicacion.pathname}>
@@ -73,7 +81,7 @@ export default function App() {
         </Routes>
         </LimiteDeError>
       </main>
-      {ubicacion.pathname === '/' && <PiePagina />}
+      {esInicio && <PiePagina />}
     </div>
   )
 }

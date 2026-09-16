@@ -24,7 +24,9 @@ import {
   BookPlus,
   Check,
   Loader2,
+  Search,
   SearchX,
+  SlidersHorizontal,
 } from 'lucide-react'
 
 import {
@@ -67,11 +69,11 @@ const SENTIDOS = {
 const SUGERENCIAS_GOOGLE = 6
 
 const CLASES_FOCO =
-  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--color-brand-cream) focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950'
+  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--color-brand-primary) focus-visible:ring-offset-2 focus-visible:ring-offset-[#f4ede2]'
 
 const CLASES_CAMPO =
-  `w-full rounded-md border border-slate-700 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 ` +
-  `placeholder:text-slate-500 transition-colors hover:border-slate-600 ${CLASES_FOCO}`
+  `w-full border border-[#c5b5a5] bg-[#fffaf0] px-3 py-2.5 text-sm text-[#2d1d20] ` +
+  `placeholder:text-[#9a847d] transition-colors hover:border-[#9f8980] ${CLASES_FOCO}`
 
 /** Ventana de páginas alrededor de la actual, con cortes marcados como null. */
 function paginasVisibles(actual, totalPaginas) {
@@ -303,12 +305,21 @@ export default function CatalogoBuscador() {
     !cargando && obras.length === 0 && sugerenciasVisibles.length === 0 && !cargandoSugerencias
 
   return (
-    <div className="space-y-8">
-      <header className="border-b border-(--color-brand-secondary)/25 pb-5">
-        <h2 className="font-serif text-3xl text-(--color-brand-cream)">Catálogo</h2>
-        <p className="mt-1.5 max-w-2xl text-sm text-slate-400">
-          Escritos publicados por la comunidad y libros de todo el mundo
-        </p>
+    <div className="catalogo-editorial space-y-10">
+      <header className="grid gap-7 border-b border-[#bcae9e] pb-9 lg:grid-cols-[150px_minmax(0,1fr)_auto] lg:items-end">
+        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#806b65]">
+          <span className="h-px w-10 bg-(--color-brand-primary)" />
+          02 / Catálogo
+        </div>
+        <div>
+          <h2 className="font-editorial text-5xl leading-none font-semibold tracking-[-0.04em] text-[#24171a] sm:text-6xl">
+            Encontrá una historia.
+          </h2>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-[#705b57] sm:text-base">
+            Escritos de la comunidad y libros de todo el mundo, reunidos en una misma búsqueda.
+          </p>
+        </div>
+        <Search className="hidden size-12 text-[#aa9990] lg:block" strokeWidth={1.2} aria-hidden="true" />
       </header>
 
       {/* ---------- FILTROS (CU03) ---------- */}
@@ -317,10 +328,14 @@ export default function CatalogoBuscador() {
           role="search"
           aria-label="Buscar obras en el catálogo"
           onSubmit={(evento) => evento.preventDefault()}
-          className="grid gap-5 rounded-lg border border-slate-800 bg-slate-900/40 p-5 md:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-x-5 gap-y-6 border-y border-[#bcae9e] bg-[#f7f1e7] px-5 py-6 md:grid-cols-2 lg:grid-cols-4 lg:px-7"
         >
+          <div className="flex items-center gap-2 md:col-span-2 lg:col-span-4">
+            <SlidersHorizontal className="size-4 text-(--color-brand-primary)" aria-hidden="true" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#725d58]">Afinar la búsqueda</span>
+          </div>
           <div>
-            <label htmlFor="filtro-titulo" className="mb-1.5 block text-sm font-medium text-slate-300">
+            <label htmlFor="filtro-titulo" className="mb-1.5 block text-sm font-semibold text-[#3e2b2e]">
               Título
             </label>
             <input
@@ -334,7 +349,7 @@ export default function CatalogoBuscador() {
           </div>
 
           <div>
-            <label htmlFor="filtro-autor" className="mb-1.5 block text-sm font-medium text-slate-300">
+            <label htmlFor="filtro-autor" className="mb-1.5 block text-sm font-semibold text-[#3e2b2e]">
               Autor
             </label>
             <input
@@ -346,13 +361,13 @@ export default function CatalogoBuscador() {
               aria-describedby="ayuda-autor"
               className={CLASES_CAMPO}
             />
-            <p id="ayuda-autor" className="mt-1 text-xs text-slate-500">
+            <p id="ayuda-autor" className="mt-1 text-xs text-[#8a746d]">
               En Escritos busca por apodo de la plataforma.
             </p>
           </div>
 
           <div>
-            <label htmlFor="filtro-genero" className="mb-1.5 block text-sm font-medium text-slate-300">
+            <label htmlFor="filtro-genero" className="mb-1.5 block text-sm font-semibold text-[#3e2b2e]">
               Género
             </label>
             <select
@@ -369,13 +384,13 @@ export default function CatalogoBuscador() {
                 </option>
               ))}
             </select>
-            <p id="ayuda-genero" className="mt-1 text-xs text-slate-500">
+            <p id="ayuda-genero" className="mt-1 text-xs text-[#8a746d]">
               Filtra solo obras ya catalogadas.
             </p>
           </div>
 
           <div>
-            <label htmlFor="filtro-orden" className="mb-1.5 block text-sm font-medium text-slate-300">
+            <label htmlFor="filtro-orden" className="mb-1.5 block text-sm font-semibold text-[#3e2b2e]">
               Ordenar por
             </label>
             <div className="flex gap-2">
@@ -407,7 +422,7 @@ export default function CatalogoBuscador() {
                 // y el título describe la acción del botón.
                 aria-label={`Orden ${SENTIDOS[orden][direccion]}. Invertir.`}
                 title={`Ordenado ${SENTIDOS[orden][direccion]}`}
-                className={`shrink-0 rounded-md border border-slate-700 px-3 text-slate-300 transition-colors hover:border-(--color-brand-secondary) hover:text-(--color-brand-cream) ${CLASES_FOCO}`}
+                className={`shrink-0 border border-[#c5b5a5] bg-[#fffaf0] px-3 text-[#6d5753] transition-colors hover:border-(--color-brand-primary) hover:text-(--color-brand-primary) ${CLASES_FOCO}`}
               >
                 {direccion === DIRECCION.ASC ? (
                   <ArrowUpNarrowWide aria-hidden="true" className="size-4" />
@@ -416,22 +431,22 @@ export default function CatalogoBuscador() {
                 )}
               </button>
             </div>
-            <p className="mt-1 text-xs text-slate-500">{SENTIDOS[orden][direccion]}</p>
+            <p className="mt-1 text-xs text-[#8a746d]">{SENTIDOS[orden][direccion]}</p>
           </div>
 
           {/* Radios reales: el navegador ya da navegación con flechas y anuncio de grupo. */}
           <fieldset className="lg:col-span-3">
-            <legend className="mb-1.5 text-sm font-medium text-slate-300">Tipo de obra</legend>
+            <legend className="mb-1.5 text-sm font-semibold text-[#3e2b2e]">Tipo de obra</legend>
             <div className="flex flex-wrap gap-2">
               {TIPOS.map(({ valor, etiqueta }) => {
                 const activo = tipo === valor
                 return (
                   <label
                     key={valor}
-                    className={`cursor-pointer rounded-full border px-4 py-1.5 text-sm transition-colors has-focus-visible:ring-2 has-focus-visible:ring-(--color-brand-cream) has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-slate-950 ${
+                    className={`cursor-pointer border px-4 py-2 text-sm transition-colors has-focus-visible:ring-2 has-focus-visible:ring-(--color-brand-primary) has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-[#f4ede2] ${
                       activo
                         ? 'border-(--color-brand-primary) bg-(--color-brand-primary) font-semibold text-white'
-                        : 'border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                        : 'border-[#c5b5a5] bg-[#fffaf0] text-[#6e5955] hover:border-[#8f7770] hover:text-[#2d1d20]'
                     }`}
                   >
                     <input
@@ -454,7 +469,7 @@ export default function CatalogoBuscador() {
               type="button"
               onClick={limpiarFiltros}
               disabled={!hayFiltros}
-              className={`rounded-md border border-slate-700 px-4 py-2 text-sm text-slate-300 transition-colors hover:border-(--color-brand-secondary) hover:text-(--color-brand-cream) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-700 disabled:hover:text-slate-300 ${CLASES_FOCO}`}
+              className={`border border-[#c5b5a5] bg-transparent px-4 py-2 text-sm text-[#6e5955] transition-colors hover:border-(--color-brand-primary) hover:text-(--color-brand-primary) disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[#c5b5a5] disabled:hover:text-[#6e5955] ${CLASES_FOCO}`}
             >
               Limpiar filtros
             </button>
@@ -468,9 +483,10 @@ export default function CatalogoBuscador() {
           Resultados de la búsqueda
         </h3>
 
-        <div className="flex items-center justify-between gap-4 pb-3">
+        <div className="flex items-center justify-between gap-4 border-b border-[#bcae9e] pb-4">
           {/* Región viva: los lectores de pantalla anuncian el recuento al cambiar filtros. */}
-          <p role="status" aria-live="polite" className="text-sm text-slate-400">
+          <p role="status" aria-live="polite" className="flex items-center gap-3 text-sm font-medium text-[#6f5955]">
+            <span className="size-1.5 bg-(--color-brand-primary)" aria-hidden="true" />
             {cargando
               ? 'Buscando obras…'
               : error
@@ -489,7 +505,7 @@ export default function CatalogoBuscador() {
           {(cargando || cargandoSugerencias) && (
             <Loader2
               aria-hidden="true"
-              className="size-4 shrink-0 animate-spin text-(--color-brand-secondary)"
+              className="size-4 shrink-0 animate-spin text-(--color-brand-primary)"
             />
           )}
         </div>
@@ -497,17 +513,17 @@ export default function CatalogoBuscador() {
         {error && (
           <div
             role="alert"
-            className="rounded-lg border border-red-900/60 bg-red-950/30 p-6 text-center"
+            className="border border-[#cf9a9a] bg-[#fff1ed] p-7 text-center"
           >
-            <AlertCircle aria-hidden="true" className="mx-auto size-6 text-red-400" />
-            <p className="mt-3 font-medium text-red-200">{error.message}</p>
-            <p className="mt-1 text-sm text-red-300/70">
+            <AlertCircle aria-hidden="true" className="mx-auto size-6 text-[#a22842]" />
+            <p className="mt-3 font-medium text-[#6f2636]">{error.message}</p>
+            <p className="mt-1 text-sm text-[#94606b]">
               Puede ser un problema de conexión o que el servidor no esté respondiendo.
             </p>
             <button
               type="button"
               onClick={() => setIntento((n) => n + 1)}
-              className={`mt-4 rounded-full bg-(--color-brand-primary) px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 ${CLASES_FOCO}`}
+              className={`boton-recorte mt-4 bg-(--color-brand-primary) px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#991035] ${CLASES_FOCO}`}
             >
               Reintentar
             </button>
@@ -515,14 +531,14 @@ export default function CatalogoBuscador() {
         )}
 
         {!error && sinNingunResultado && (
-          <div className="rounded-lg border border-dashed border-slate-700 p-10 text-center">
-            <SearchX aria-hidden="true" className="mx-auto size-7 text-slate-600" />
-            <p className="mt-3 font-medium text-slate-200">
+          <div className="border border-dashed border-[#b8a89a] bg-[#f7f1e7] p-10 text-center">
+            <SearchX aria-hidden="true" className="mx-auto size-7 text-[#9a847d]" />
+            <p className="mt-3 font-medium text-[#352326]">
               {hayFiltros
                 ? 'Ninguna obra coincide con esos filtros'
                 : 'Todavía no hay obras en el catálogo'}
             </p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-[#806b65]">
               {hayFiltros
                 ? 'Probá con menos filtros o revisá la ortografía del título.'
                 : 'Buscá por título o autor para encontrar obras.'}
@@ -531,7 +547,7 @@ export default function CatalogoBuscador() {
               <button
                 type="button"
                 onClick={limpiarFiltros}
-                className={`mt-4 rounded-full border border-(--color-brand-secondary) px-5 py-2 text-sm font-medium text-(--color-brand-cream) transition-colors hover:bg-(--color-brand-secondary)/20 ${CLASES_FOCO}`}
+                className={`mt-4 border border-(--color-brand-primary) px-5 py-2 text-sm font-medium text-(--color-brand-primary) transition-colors hover:bg-(--color-brand-primary) hover:text-white ${CLASES_FOCO}`}
               >
                 Limpiar filtros
               </button>
@@ -542,7 +558,7 @@ export default function CatalogoBuscador() {
         {/* ---------- RESULTADOS: catalogadas y sin catalogar, en una sola lista ---------- */}
         {(obras.length > 0 || sugerenciasVisibles.length > 0) && (
           <ul
-            className={`divide-y divide-slate-800 border-y border-slate-800 transition-opacity ${
+            className={`divide-y divide-[#d0c2b4] border-b border-[#bcae9e] transition-opacity ${
               cargando ? 'opacity-50' : 'opacity-100'
             }`}
           >
@@ -550,24 +566,24 @@ export default function CatalogoBuscador() {
               <li key={`obra-${obra.id}`}>
                 <Link
                   to={`/obra/${obra.id}`}
-                  className={`group flex gap-4 border-l-2 border-transparent py-4 pl-4 pr-2 transition-colors hover:border-(--color-brand-primary) hover:bg-slate-900/60 ${CLASES_FOCO}`}
+                  className={`group flex gap-4 border-l-2 border-transparent py-5 pl-4 pr-2 transition-colors hover:border-(--color-brand-primary) hover:bg-[#f7f1e7] ${CLASES_FOCO}`}
                 >
-                  <PortadaObra obra={obra} />
+                  <PortadaObra obra={obra} tema="claro" />
 
                   <div className="min-w-0 flex-1">
-                    <EtiquetaTipo tipo={obra.tipo} />
-                    <h4 className="mt-1 truncate font-serif text-lg text-(--color-brand-cream) group-hover:underline">
+                    <EtiquetaTipo tipo={obra.tipo} tema="claro" />
+                    <h4 className="font-editorial mt-1 truncate text-xl text-[#2d1d20] group-hover:text-(--color-brand-primary)">
                       {obra.titulo}
                     </h4>
-                    <p className="mt-0.5 text-sm text-slate-400">
+                    <p className="mt-0.5 text-sm text-[#725d58]">
                       {obra.autor ?? (
-                        <span className="italic text-slate-500">Autoría no disponible</span>
+                        <span className="italic text-[#907b74]">Autoría no disponible</span>
                       )}
                       {/* El año que se muestra es el de la obra, no el del alta
                           en la plataforma. Los escritos no lo llevan: para ellos
                           ambas fechas son la misma. */}
                       {obra.fechaPublicacionOriginal && (
-                        <span className="text-slate-500">
+                        <span className="text-[#907b74]">
                           {' '}
                           · {obra.fechaPublicacionOriginal.slice(0, 4)}
                         </span>
@@ -576,15 +592,15 @@ export default function CatalogoBuscador() {
 
                     <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                       {obra.genero && (
-                        <span className="text-xs uppercase tracking-wider text-slate-500">
+                        <span className="text-xs uppercase tracking-wider text-[#806b65]">
                           {obra.genero}
                         </span>
                       )}
-                      <Estrellas valor={obra.promedioCalificacion} />
+                      <Estrellas valor={obra.promedioCalificacion} tema="claro" />
                     </div>
 
                     {obra.sinopsis && (
-                      <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-slate-500">
+                      <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-[#806b65]">
                         {obra.sinopsis}
                       </p>
                     )}
@@ -603,7 +619,7 @@ export default function CatalogoBuscador() {
               return (
                 <li
                   key={`google-${volumen.googleBooksId}`}
-                  className="flex border-l-2 border-transparent transition-colors hover:border-slate-600 hover:bg-slate-900/60"
+                  className="flex border-l-2 border-transparent transition-colors hover:border-(--color-brand-secondary) hover:bg-[#f7f1e7]"
                 >
                   {/* El botón de agregar queda FUERA del enlace: un <button>
                       dentro de un <a> es HTML inválido y rompe el teclado. */}
@@ -617,6 +633,7 @@ export default function CatalogoBuscador() {
                     className={`group flex min-w-0 flex-1 gap-4 py-4 pl-4 pr-2 ${CLASES_FOCO}`}
                   >
                     <PortadaObra
+                      tema="claro"
                       obra={{
                         titulo: volumen.titulo,
                         portadaUrl: volumen.portadaUrl,
@@ -625,16 +642,16 @@ export default function CatalogoBuscador() {
                     />
 
                     <div className="min-w-0 flex-1">
-                      <EtiquetaTipo tipo={TIPO_OBRA.LIBRO} />
-                      <h4 className="mt-1 font-serif text-lg text-slate-300 group-hover:underline">
+                      <EtiquetaTipo tipo={TIPO_OBRA.LIBRO} tema="claro" />
+                      <h4 className="font-editorial mt-1 text-xl text-[#2d1d20] group-hover:text-(--color-brand-primary)">
                         {volumen.titulo}
                       </h4>
-                      <p className="mt-0.5 text-sm text-slate-400">
+                      <p className="mt-0.5 text-sm text-[#725d58]">
                         {volumen.autorTexto ?? (
-                          <span className="italic text-slate-500">Autoría no informada</span>
+                          <span className="italic text-[#907b74]">Autoría no informada</span>
                         )}
                         {volumen.fechaPublicacion && (
-                          <span className="text-slate-500">
+                          <span className="text-[#907b74]">
                             {' '}
                             · {volumen.fechaPublicacion.slice(0, 4)}
                           </span>
@@ -644,16 +661,16 @@ export default function CatalogoBuscador() {
                           promedio se muestra siempre, y sin calificaciones lo
                           dice en lugar de omitirse. */}
                       <div className="mt-2">
-                        <Estrellas valor={0} />
+                        <Estrellas valor={0} tema="claro" />
                       </div>
 
                       {volumen.sinopsis && (
-                        <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-slate-500">
+                        <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-[#806b65]">
                           {volumen.sinopsis}
                         </p>
                       )}
                       {falloAlta && (
-                        <p role="alert" className="mt-2 text-sm text-red-300">
+                        <p role="alert" className="mt-2 text-sm text-[#a22842]">
                           {falloAlta}
                         </p>
                       )}
@@ -667,7 +684,7 @@ export default function CatalogoBuscador() {
                     {idObra ? (
                       <Link
                         to={`/obra/${idObra}`}
-                        className={`inline-flex items-center gap-1.5 rounded-full border border-(--color-brand-mint)/50 px-4 py-1.5 text-sm text-(--color-brand-mint) transition-colors hover:bg-(--color-brand-mint)/10 ${CLASES_FOCO}`}
+                        className={`inline-flex items-center gap-1.5 border border-[#6f8f77] px-4 py-2 text-sm text-[#55745f] transition-colors hover:bg-(--color-brand-mint)/20 ${CLASES_FOCO}`}
                       >
                         <Check aria-hidden="true" className="size-4" />
                         Ver ficha
@@ -677,7 +694,7 @@ export default function CatalogoBuscador() {
                         type="button"
                         onClick={() => agregarAlCatalogo(volumen)}
                         disabled={procesando}
-                        className={`inline-flex items-center gap-1.5 rounded-full border border-(--color-brand-secondary) px-4 py-1.5 text-sm font-medium text-(--color-brand-cream) transition-colors hover:bg-(--color-brand-secondary)/20 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${CLASES_FOCO}`}
+                        className={`inline-flex items-center gap-1.5 border border-(--color-brand-secondary) px-4 py-2 text-sm font-medium text-[#7b3f49] transition-colors hover:bg-(--color-brand-secondary)/15 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent ${CLASES_FOCO}`}
                       >
                         {procesando ? (
                           <Loader2 aria-hidden="true" className="size-4 animate-spin" />
@@ -696,7 +713,7 @@ export default function CatalogoBuscador() {
         )}
 
         {errorSugerencias && obras.length > 0 && (
-          <p className="pt-3 text-sm text-slate-500">
+          <p className="pt-3 text-sm text-[#806b65]">
             No se pudieron traer más resultados: {errorSugerencias.message}
           </p>
         )}
@@ -712,7 +729,7 @@ export default function CatalogoBuscador() {
                   type="button"
                   onClick={() => actualizarFiltro({ pagina: pagina - 1 })}
                   disabled={pagina === 1}
-                  className={`rounded-md px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent ${CLASES_FOCO}`}
+                  className={`border border-transparent px-3 py-2 text-sm text-[#65504d] transition-colors hover:border-[#c5b5a5] hover:bg-[#f7f1e7] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-transparent disabled:hover:bg-transparent ${CLASES_FOCO}`}
                 >
                   Anterior
                 </button>
@@ -720,7 +737,7 @@ export default function CatalogoBuscador() {
 
               {paginasVisibles(pagina, totalPaginas).map((numero, indice) =>
                 numero === null ? (
-                  <li key={`corte-${indice}`} aria-hidden="true" className="px-1 text-slate-600">
+                  <li key={`corte-${indice}`} aria-hidden="true" className="px-1 text-[#a18b84]">
                     …
                   </li>
                 ) : (
@@ -730,10 +747,10 @@ export default function CatalogoBuscador() {
                       onClick={() => actualizarFiltro({ pagina: numero })}
                       aria-current={numero === pagina ? 'page' : undefined}
                       aria-label={`Página ${numero}`}
-                      className={`min-w-9 rounded-md px-3 py-1.5 text-sm transition-colors ${
-                        numero === pagina
-                          ? 'bg-(--color-brand-primary) font-semibold text-white'
-                          : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                    className={`min-w-9 border px-3 py-2 text-sm transition-colors ${
+                      numero === pagina
+                          ? 'border-(--color-brand-primary) bg-(--color-brand-primary) font-semibold text-white'
+                          : 'border-transparent text-[#6e5955] hover:border-[#c5b5a5] hover:bg-[#f7f1e7] hover:text-[#2d1d20]'
                       } ${CLASES_FOCO}`}
                     >
                       {numero}
@@ -747,7 +764,7 @@ export default function CatalogoBuscador() {
                   type="button"
                   onClick={() => actualizarFiltro({ pagina: pagina + 1 })}
                   disabled={pagina >= totalPaginas}
-                  className={`rounded-md px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent ${CLASES_FOCO}`}
+                  className={`border border-transparent px-3 py-2 text-sm text-[#65504d] transition-colors hover:border-[#c5b5a5] hover:bg-[#f7f1e7] disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-transparent disabled:hover:bg-transparent ${CLASES_FOCO}`}
                 >
                   Siguiente
                 </button>

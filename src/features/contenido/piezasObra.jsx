@@ -10,10 +10,11 @@ import { TIPO_OBRA } from './catalogoApi'
  * Calificación promedio. El detalle de estrellas es decorativo (aria-hidden):
  * el valor se anuncia una sola vez con un texto legible.
  */
-export function Estrellas({ valor, tamano = 14, mostrarNumero = true }) {
+export function Estrellas({ valor, tamano = 14, mostrarNumero = true, tema = 'oscuro' }) {
   const promedio = Number(valor ?? 0)
   const llenas = Math.round(promedio)
   const sinCalificar = !promedio
+  const esClaro = tema === 'claro'
 
   // Las cinco estrellas se dibujan siempre, también sin calificaciones: el
   // promedio tiene que ser visible en todas las obras, y una obra sin calificar
@@ -27,16 +28,20 @@ export function Estrellas({ valor, tamano = 14, mostrarNumero = true }) {
             size={tamano}
             className={
               posicion <= llenas
-                ? 'fill-(--color-brand-cream) text-(--color-brand-cream)'
-                : 'text-slate-700'
+                ? esClaro
+                  ? 'fill-(--color-brand-primary) text-(--color-brand-primary)'
+                  : 'fill-(--color-brand-cream) text-(--color-brand-cream)'
+                : esClaro
+                  ? 'text-[#c5b5a5]'
+                  : 'text-slate-700'
             }
           />
         ))}
       </span>
       {mostrarNumero && (
-        <span className="text-xs font-medium text-slate-400">
+        <span className={`text-xs font-medium ${esClaro ? 'text-[#725d58]' : 'text-slate-400'}`}>
           {sinCalificar ? (
-            <span className="text-slate-500">Sin calificaciones</span>
+            <span className={esClaro ? 'text-[#8a746d]' : 'text-slate-500'}>Sin calificaciones</span>
           ) : (
             <>
               <span className="sr-only">Calificación promedio: </span>
@@ -56,13 +61,16 @@ export function Estrellas({ valor, tamano = 14, mostrarNumero = true }) {
 }
 
 /** Etiqueta de subtipo. El color es redundante con el texto, nunca el único indicador. */
-export function EtiquetaTipo({ tipo }) {
+export function EtiquetaTipo({ tipo, tema = 'oscuro' }) {
   const esEscrito = tipo === TIPO_OBRA.ESCRITO
+  const esClaro = tema === 'claro'
 
   return (
     <span
       className={`text-[0.65rem] font-semibold uppercase tracking-[0.14em] ${
-        esEscrito ? 'text-(--color-brand-mint)' : 'text-(--color-brand-sand)'
+        esEscrito
+          ? esClaro ? 'text-[#55745f]' : 'text-(--color-brand-mint)'
+          : esClaro ? 'text-[#8b4652]' : 'text-(--color-brand-sand)'
       }`}
     >
       {/* El estado de catalogación es interno: al lector solo le importa si es
@@ -77,14 +85,16 @@ export function EtiquetaTipo({ tipo }) {
  * ellos (y para los Libros sin portada cacheada) se compone una tapa
  * tipográfica con la inicial del título en lugar de un ícono genérico.
  */
-export function PortadaObra({ obra, className = 'h-24 w-16' }) {
+export function PortadaObra({ obra, className = 'h-24 w-16', tema = 'oscuro' }) {
+  const esClaro = tema === 'claro'
+
   if (obra.portadaUrl) {
     return (
       <img
         src={obra.portadaUrl}
         alt={`Portada de ${obra.titulo}`}
         loading="lazy"
-        className={`${className} shrink-0 rounded-sm object-cover ring-1 ring-slate-700/70`}
+        className={`${className} shrink-0 object-cover ring-1 ${esClaro ? 'ring-[#bcae9e]' : 'rounded-sm ring-slate-700/70'}`}
       />
     )
   }
@@ -96,10 +106,14 @@ export function PortadaObra({ obra, className = 'h-24 w-16' }) {
     <div
       role="img"
       aria-label={`Sin portada disponible para ${obra.titulo}`}
-      className={`${className} flex shrink-0 items-center justify-center rounded-sm ring-1 ring-slate-700/70 ${
+      className={`${className} flex shrink-0 items-center justify-center ring-1 ${esClaro ? 'ring-[#bcae9e]' : 'rounded-sm ring-slate-700/70'} ${
         esEscrito
-          ? 'bg-linear-to-br from-(--color-brand-primary)/70 to-slate-900'
-          : 'bg-linear-to-br from-(--color-brand-secondary)/60 to-slate-900'
+          ? esClaro
+            ? 'bg-linear-to-br from-(--color-brand-primary) to-[#4b1f2c]'
+            : 'bg-linear-to-br from-(--color-brand-primary)/70 to-slate-900'
+          : esClaro
+            ? 'bg-linear-to-br from-(--color-brand-secondary) to-[#3d292c]'
+            : 'bg-linear-to-br from-(--color-brand-secondary)/60 to-slate-900'
       }`}
     >
       <span className="font-serif text-2xl text-(--color-brand-cream)/80">{inicial}</span>

@@ -43,6 +43,31 @@ button {
   background: var(--color-warm-paper);
 }
 
+.catalogo-editorial,
+.auth-editorial {
+  color: var(--color-warm-ink);
+}
+
+.auth-manifiesto {
+  background:
+    linear-gradient(rgba(63, 40, 35, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 40, 35, 0.018) 1px, transparent 1px),
+    radial-gradient(circle at 78% 28%, rgba(255, 227, 179, 0.7), transparent 24rem),
+    #f4ede2;
+  background-size: 28px 28px, 28px 28px, auto, auto;
+}
+
+.auth-signo {
+  position: absolute;
+  top: -7rem;
+  right: 3%;
+  color: rgba(185, 17, 63, 0.05);
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(24rem, 44vw, 42rem);
+  line-height: 1;
+  user-select: none;
+}
+
 .portada-lectura {
   background:
     linear-gradient(rgba(63, 40, 35, 0.024) 1px, transparent 1px),
