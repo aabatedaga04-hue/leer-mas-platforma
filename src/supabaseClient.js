@@ -19,4 +19,11 @@ if (!configuracionCompleta) {
 export const supabase = createClient(
   supabaseUrl || 'https://sin-configurar.supabase.co',
   supabaseAnonKey || 'sin-configurar',
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  },
 )

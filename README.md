@@ -1,18 +1,57 @@
-# Proyecto LEER+
+# LEER+
 
-# React + Vite
+Plataforma web de la Fundación Literaria Comunitaria para descubrir obras, publicar escritos y conectar lectores-escritores, bibliotecas y editoriales.
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Requisitos
 
-Currently, two official plugins are available:
+- Node.js 20 o superior.
+- Un proyecto de Supabase con autenticación por correo habilitada.
+- Una clave de Google Books API para probar el catálogo externo.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Configuración local
 
-## React Compiler
+1. Instalar dependencias:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+   ```bash
+   npm install
+   ```
 
-## Expanding the Oxlint configuration
+2. Copiar `.env.example` como `.env.local` y completar:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+   ```env
+   VITE_SUPABASE_URL=
+   VITE_SUPABASE_ANON_KEY=
+   VITE_GOOGLE_BOOKS_API_KEY=
+   ```
+
+   `.env.local` está excluido de Git y nunca debe subirse al repositorio.
+
+3. Iniciar el proyecto:
+
+   ```bash
+   npm run dev
+   ```
+
+## Base de datos
+
+- Proyecto nuevo: ejecutar `database/schema_LEER_supabase.sql`.
+- Proyecto que ya tiene el esquema anterior: ejecutar `database/cu01_autenticacion_registro.sql`.
+- Los demás scripts de `database/` agregan funciones, vistas y datos del catálogo.
+
+Para el CU01, configurar en Supabase Auth:
+
+- Confirmación de correo habilitada.
+- URL local permitida: `http://localhost:5173/**`.
+- URL de recuperación local: `http://localhost:5173/restablecer-contrasena`.
+- Contraseña mínima del servidor de al menos 8 caracteres. La aplicación además exige una mayúscula, una minúscula y un carácter especial.
+
+El script crea el bucket privado `documentacion-institucional`. Cada Biblioteca o Editorial debe verificar su correo y adjuntar exactamente dos archivos PDF de hasta 10 MB antes de generar su solicitud.
+
+## Verificación antes de publicar una rama
+
+```bash
+npm run lint
+npm run build
+```
+
+El trabajo debe realizarse en ramas `feature/...` creadas desde un `main` actualizado. La integración a `main` se hace mediante Pull Request revisado por el equipo.
