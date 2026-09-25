@@ -42,6 +42,7 @@ CREATE TABLE usuario (
     apellido        VARCHAR(100) NOT NULL,
     telefono        VARCHAR(30),
     pais            VARCHAR(100) NOT NULL,
+    provincia       VARCHAR(120) NOT NULL,
     localidad       VARCHAR(150) NOT NULL,
     estado          estado_usuario_enum NOT NULL DEFAULT 'activo',
     fecha_registro  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -56,6 +57,11 @@ CREATE TABLE lector_escritor (
     apodo           VARCHAR(50) NOT NULL,
     puntos_desafio  INTEGER NOT NULL DEFAULT 0
 );
+
+-- El alias identifica públicamente al lector-escritor sin distinguir
+-- mayúsculas/minúsculas ni espacios accidentales.
+CREATE UNIQUE INDEX idx_lector_escritor_apodo_unico
+    ON lector_escritor (lower(trim(apodo)));
 
 CREATE TABLE biblioteca (
     id_usuario      UUID PRIMARY KEY REFERENCES usuario(id_usuario) ON DELETE CASCADE,
@@ -225,7 +231,7 @@ BEGIN
     END IF;
 
     INSERT INTO usuario (
-        id_usuario, email, nombre, apellido, telefono, pais, localidad,
+        id_usuario, email, nombre, apellido, telefono, pais, provincia, localidad,
         estado, tipo_usuario, terminos_version, privacidad_version,
         aceptacion_politicas_en
     ) VALUES (
@@ -235,6 +241,7 @@ BEGIN
         trim(NEW.raw_user_meta_data->>'apellido'),
         NULLIF(trim(NEW.raw_user_meta_data->>'telefono'), ''),
         trim(NEW.raw_user_meta_data->>'pais'),
+        trim(NEW.raw_user_meta_data->>'provincia'),
         trim(NEW.raw_user_meta_data->>'localidad'),
         'pendiente',
         v_tipo::tipo_usuario_enum,
@@ -244,15 +251,11 @@ BEGIN
     );
 
     IF v_tipo = 'lector_escritor' THEN
+        IF length(trim(COALESCE(NEW.raw_user_meta_data->>'apodo', ''))) NOT BETWEEN 3 AND 50 THEN
+            RAISE EXCEPTION 'El alias debe tener entre 3 y 50 caracteres';
+        END IF;
         INSERT INTO lector_escritor (id_usuario, apodo)
-        VALUES (
-            NEW.id,
-            COALESCE(
-                NULLIF(trim(NEW.raw_user_meta_data->>'apodo'), ''),
-                NULLIF(trim(NEW.raw_user_meta_data->>'nombre'), ''),
-                split_part(NEW.email, '@', 1)
-            )
-        );
+        VALUES (NEW.id, trim(NEW.raw_user_meta_data->>'apodo'));
     ELSE
         v_cuit := regexp_replace(COALESCE(NEW.raw_user_meta_data->>'cuit', ''), '[^0-9]', '', 'g');
         IF v_cuit !~ '^[0-9]{11}$' THEN
@@ -546,10 +549,33 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
     );
 $$;
 
+-- Consultas mínimas para orientar el acceso y validar el alias sin exponer
+-- perfiles, correos ni identificadores a usuarios anónimos.
+CREATE OR REPLACE FUNCTION fn_email_registrado(p_email TEXT)
+RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM usuario
+        WHERE lower(email) = lower(trim(p_email))
+    );
+$$;
+
+CREATE OR REPLACE FUNCTION fn_alias_disponible(p_alias TEXT)
+RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+    SELECT length(trim(p_alias)) BETWEEN 3 AND 50
+       AND NOT EXISTS (
+           SELECT 1 FROM lector_escritor
+           WHERE lower(trim(apodo)) = lower(trim(p_alias))
+       );
+$$;
+
 REVOKE ALL ON FUNCTION fn_es_administrador(UUID) FROM PUBLIC;
 REVOKE ALL ON FUNCTION fn_usuario_activo(UUID) FROM PUBLIC;
+REVOKE ALL ON FUNCTION fn_email_registrado(TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION fn_alias_disponible(TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION fn_es_administrador(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION fn_usuario_activo(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION fn_email_registrado(TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION fn_alias_disponible(TEXT) TO anon, authenticated;
 
 CREATE OR REPLACE FUNCTION fn_completar_solicitud_institucional(p_documentos JSONB)
 RETURNS INTEGER
@@ -670,7 +696,7 @@ CREATE POLICY "usuario_update_propio" ON usuario
 -- El trigger de Auth crea el perfil. Desde el cliente solo se pueden cambiar
 -- datos comunes; estado, rol y aceptaciones no son autoeditables.
 REVOKE UPDATE ON usuario FROM authenticated;
-GRANT UPDATE (nombre, apellido, telefono, pais, localidad) ON usuario TO authenticated;
+GRANT UPDATE (nombre, apellido, telefono, pais, provincia, localidad) ON usuario TO authenticated;
 
 -- El apodo es dato de exhibición pública: aparece como autoría de cada
 -- Escrito y como firma de cada reseña (CU03/CU04). Los datos sensibles

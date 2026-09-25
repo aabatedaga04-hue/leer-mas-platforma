@@ -1,6 +1,8 @@
 import { ChevronDown, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { limpiarValidacion, mostrarValidacionEspanol } from './formValidation'
+
 const INPUT =
   'w-full rounded-lg border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-10 text-sm text-slate-100 placeholder:text-slate-500 focus:border-(--color-brand-secondary) focus:outline-none focus:ring-2 focus:ring-(--color-brand-primary)/30 disabled:cursor-not-allowed disabled:opacity-60'
 
@@ -98,12 +100,14 @@ export default function SearchableSelect({
             evento.currentTarget.select()
           }}
           onChange={(evento) => {
+            limpiarValidacion(evento)
             setConsulta(evento.target.value)
             setAbierto(true)
             setActivo(0)
             if (value) onSelect(null)
           }}
           onKeyDown={manejarTeclado}
+          onInvalid={mostrarValidacionEspanol}
           className={INPUT}
         />
         <ChevronDown aria-hidden="true" className={`pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-slate-500 transition ${abierto ? 'rotate-180' : ''}`} />

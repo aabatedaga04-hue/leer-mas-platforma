@@ -18,6 +18,7 @@ ALTER TABLE public.usuario
     ADD COLUMN IF NOT EXISTS nombre VARCHAR(100),
     ADD COLUMN IF NOT EXISTS apellido VARCHAR(100),
     ADD COLUMN IF NOT EXISTS pais VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS provincia VARCHAR(120),
     ADD COLUMN IF NOT EXISTS localidad VARCHAR(150),
     ADD COLUMN IF NOT EXISTS terminos_version VARCHAR(30),
     ADD COLUMN IF NOT EXISTS privacidad_version VARCHAR(30),
@@ -28,6 +29,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_biblioteca_cuit_unico
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_editorial_cuit_unico
     ON public.editorial (regexp_replace(cuit, '[^0-9]', '', 'g'));
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_lector_escritor_apodo_unico
+    ON public.lector_escritor (lower(trim(apodo)));
 
 -- Reserva central para impedir que un CUIT aparezca a la vez como Biblioteca
 -- y como Editorial. Las tablas de subtipo conservan sus datos operativos.
@@ -94,10 +98,41 @@ AS $$
     );
 $$;
 
+CREATE OR REPLACE FUNCTION public.fn_email_registrado(p_email TEXT)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT EXISTS (
+        SELECT 1 FROM public.usuario
+        WHERE lower(email) = lower(trim(p_email))
+    );
+$$;
+
+CREATE OR REPLACE FUNCTION public.fn_alias_disponible(p_alias TEXT)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+    SELECT length(trim(p_alias)) BETWEEN 3 AND 50
+       AND NOT EXISTS (
+           SELECT 1 FROM public.lector_escritor
+           WHERE lower(trim(apodo)) = lower(trim(p_alias))
+       );
+$$;
+
 REVOKE ALL ON FUNCTION public.fn_es_administrador(UUID) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.fn_usuario_activo(UUID) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.fn_email_registrado(TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.fn_alias_disponible(TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.fn_es_administrador(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.fn_usuario_activo(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_email_registrado(TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_alias_disponible(TEXT) TO anon, authenticated;
 
 -- ---------- Alta atomica del perfil desde auth.users ----------
 -- Nunca acepta "administrador" desde metadatos del cliente.
@@ -129,6 +164,7 @@ BEGIN
         nombre,
         apellido,
         pais,
+        provincia,
         localidad,
         terminos_version,
         privacidad_version,
@@ -142,6 +178,7 @@ BEGIN
         NULLIF(trim(NEW.raw_user_meta_data->>'nombre'), ''),
         NULLIF(trim(NEW.raw_user_meta_data->>'apellido'), ''),
         NULLIF(trim(NEW.raw_user_meta_data->>'pais'), ''),
+        NULLIF(trim(NEW.raw_user_meta_data->>'provincia'), ''),
         NULLIF(trim(NEW.raw_user_meta_data->>'localidad'), ''),
         NULLIF(NEW.raw_user_meta_data->>'terminos_version', ''),
         NULLIF(NEW.raw_user_meta_data->>'privacidad_version', ''),
@@ -149,15 +186,11 @@ BEGIN
     );
 
     IF v_tipo = 'lector_escritor' THEN
+        IF length(trim(COALESCE(NEW.raw_user_meta_data->>'apodo', ''))) NOT BETWEEN 3 AND 50 THEN
+            RAISE EXCEPTION 'El alias debe tener entre 3 y 50 caracteres';
+        END IF;
         INSERT INTO public.lector_escritor (id_usuario, apodo)
-        VALUES (
-            NEW.id,
-            COALESCE(
-                NULLIF(trim(NEW.raw_user_meta_data->>'apodo'), ''),
-                NULLIF(trim(NEW.raw_user_meta_data->>'nombre'), ''),
-                split_part(NEW.email, '@', 1)
-            )
-        );
+        VALUES (NEW.id, trim(NEW.raw_user_meta_data->>'apodo'));
     ELSE
         v_cuit := regexp_replace(COALESCE(NEW.raw_user_meta_data->>'cuit', ''), '[^0-9]', '', 'g');
         IF v_cuit !~ '^[0-9]{11}$' THEN
@@ -388,7 +421,7 @@ DROP POLICY IF EXISTS "usuario_insert_propio" ON public.usuario;
 
 -- Impide que una cuenta pendiente se habilite sola cambiando estado o rol.
 REVOKE UPDATE ON public.usuario FROM authenticated;
-GRANT UPDATE (nombre, apellido, telefono, pais, localidad) ON public.usuario TO authenticated;
+GRANT UPDATE (nombre, apellido, telefono, pais, provincia, localidad) ON public.usuario TO authenticated;
 
 DROP POLICY IF EXISTS "usuario_update_propio" ON public.usuario;
 CREATE POLICY "usuario_update_propio" ON public.usuario

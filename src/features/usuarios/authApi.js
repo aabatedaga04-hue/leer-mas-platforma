@@ -15,13 +15,18 @@ const MENSAJES_AUTH = [
   [/email not confirmed/i, 'Primero tenés que verificar tu correo electrónico.'],
   [/user already registered/i, 'Ya existe una cuenta asociada a ese correo electrónico.'],
   [/password should be/i, 'La contraseña no cumple los requisitos de seguridad.'],
-  [/rate limit/i, 'Se realizaron demasiados intentos. Esperá unos minutos y probá nuevamente.'],
+  [/rate limit|too many requests/i, 'Se realizaron demasiados intentos. Esperá unos minutos y probá nuevamente.'],
+  [/network|failed to fetch|fetch failed/i, 'No pudimos conectarnos con el servicio. Revisá tu conexión e intentá nuevamente.'],
+  [/database error saving new user/i, 'No fue posible guardar la cuenta. Revisá que el correo, el alias y el CUIT no estén registrados.'],
+  [/email.*invalid|invalid.*email/i, 'Ingresá un correo electrónico válido.'],
+  [/weak password/i, 'La contraseña no cumple los requisitos de seguridad.'],
 ]
 
 export class AuthError extends Error {
-  constructor(message, options) {
-    super(message, options)
+  constructor(message, { code, cause } = {}) {
+    super(message, { cause })
     this.name = 'AuthError'
+    this.code = code
   }
 }
 
@@ -37,7 +42,7 @@ export function obtenerEstadoContrasena(contrasena = '') {
 function traducirError(error, respaldo = 'No fue posible completar la operación.') {
   const mensaje = error?.message ?? ''
   const coincidencia = MENSAJES_AUTH.find(([patron]) => patron.test(mensaje))
-  return new AuthError(coincidencia?.[1] ?? mensaje ?? respaldo, { cause: error })
+  return new AuthError(coincidencia?.[1] ?? respaldo, { cause: error })
 }
 
 export function validarContrasena(contrasena) {
@@ -57,6 +62,7 @@ function metadataRegistro(datos) {
     apellido: datos.apellido.trim(),
     telefono: `${datos.codigoPais} ${datos.telefono}`.trim(),
     pais: datos.pais.trim(),
+    provincia: datos.provincia.trim(),
     localidad: datos.localidad.trim(),
     politicas_aceptadas: 'true',
     terminos_version: VERSION_TERMINOS,
@@ -84,7 +90,25 @@ function metadataRegistro(datos) {
   }
 }
 
-export async function registrarUsuario(datos) {
+async function errorFuncionEnEspanol(error, respaldo) {
+  try {
+    const respuesta = await error?.context?.json()
+    if (respuesta?.error) return new AuthError(respuesta.error, { cause: error })
+  } catch {
+    // La respuesta puede no contener JSON; se usa el mensaje seguro de respaldo.
+  }
+  return traducirError(error, respaldo)
+}
+
+export async function consultarAliasDisponible(alias) {
+  const normalizado = alias.trim()
+  if (normalizado.length < 3) return false
+  const { data, error } = await supabase.rpc('fn_alias_disponible', { p_alias: normalizado })
+  if (error) throw traducirError(error, 'No pudimos verificar si el alias está disponible.')
+  return Boolean(data)
+}
+
+export async function registrarUsuario(datos, documentos = []) {
   const erroresContrasena = validarContrasena(datos.contrasena)
   if (erroresContrasena.length) {
     throw new AuthError('La contraseña no cumple todos los requisitos de seguridad.')
@@ -94,6 +118,27 @@ export async function registrarUsuario(datos) {
   }
   if (!datos.aceptaPoliticas) {
     throw new AuthError('Debés aceptar los Términos y la Política de Privacidad.')
+  }
+
+  const esInstitucion = datos.tipoUsuario !== TIPO_USUARIO.LECTOR_ESCRITOR
+  if (esInstitucion) {
+    const validacionDocumentos = validarDocumentos(documentos)
+    if (validacionDocumentos) throw new AuthError(validacionDocumentos)
+
+    const formulario = new FormData()
+    formulario.append('datos', JSON.stringify({
+      email: datos.email.trim().toLowerCase(),
+      password: datos.contrasena,
+      metadata: metadataRegistro(datos),
+    }))
+    documentos.forEach((archivo) => formulario.append('documentos', archivo, archivo.name))
+
+    const { data, error } = await supabase.functions.invoke('registro-institucional', {
+      body: formulario,
+    })
+    if (error) throw await errorFuncionEnEspanol(error, 'No fue posible registrar la institución.')
+    if (data?.error) throw new AuthError(data.error)
+    return data
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -110,11 +155,29 @@ export async function registrarUsuario(datos) {
 }
 
 export async function iniciarSesion({ email, contrasena }) {
+  const correo = email.trim().toLowerCase()
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: email.trim().toLowerCase(),
+    email: correo,
     password: contrasena,
   })
-  if (error) throw traducirError(error, 'No fue posible iniciar sesión.')
+  if (error && /invalid login credentials/i.test(error.message ?? '')) {
+    const { data: registrado, error: errorConsulta } = await supabase.rpc('fn_email_registrado', {
+      p_email: correo,
+    })
+    if (!errorConsulta && !registrado) {
+      throw new AuthError('No encontramos una cuenta con ese correo electrónico. Para continuar, primero tenés que registrarte.', {
+        code: 'usuario_no_registrado',
+        cause: error,
+      })
+    }
+    if (!errorConsulta && registrado) {
+      throw new AuthError('La contraseña ingresada no es correcta. Volvé a intentarlo o recuperá tu contraseña.', {
+        code: 'contrasena_incorrecta',
+        cause: error,
+      })
+    }
+  }
+  if (error) throw traducirError(error, 'No fue posible iniciar sesión. Revisá los datos e intentá nuevamente.')
   return data
 }
 
@@ -153,7 +216,7 @@ export async function obtenerPerfil(idUsuario) {
   const { data: usuario, error } = await supabase
     .from('usuario')
     .select(
-      'id_usuario, email, nombre, apellido, telefono, pais, localidad, estado, tipo_usuario, fecha_registro',
+      'id_usuario, email, nombre, apellido, telefono, pais, provincia, localidad, estado, tipo_usuario, fecha_registro',
     )
     .eq('id_usuario', idUsuario)
     .single()
@@ -184,7 +247,7 @@ export async function obtenerSolicitudInstitucional(idUsuario) {
 }
 
 export function validarDocumentos(documentos) {
-  const archivos = [...(documentos ?? [])]
+  const archivos = [...(documentos ?? [])].filter(Boolean)
   if (archivos.length !== 2) return 'Debés seleccionar exactamente dos archivos PDF.'
   if (archivos.some((archivo) => archivo.type !== 'application/pdf')) {
     return 'Los dos archivos deben estar en formato PDF.'

@@ -36,6 +36,7 @@ Plataforma web de la Fundación Literaria Comunitaria para descubrir obras, publ
 
 - Proyecto nuevo: ejecutar `database/schema_LEER_supabase.sql`.
 - Proyecto que ya tiene el esquema anterior: ejecutar `database/cu01_autenticacion_registro.sql`.
+- Si el primer script del CU01 ya fue aplicado: ejecutar `database/cu01_mejoras_registro.sql`.
 - Los demás scripts de `database/` agregan funciones, vistas y datos del catálogo.
 
 Para el CU01, configurar en Supabase Auth:
@@ -47,7 +48,20 @@ Para el CU01, configurar en Supabase Auth:
 
 El registro consulta el catálogo público de CountriesNow para ofrecer países, prefijos telefónicos y localidades normalizadas. No requiere una clave adicional y muestra un error recuperable si el servicio no está disponible.
 
-El script crea el bucket privado `documentacion-institucional`. Cada Biblioteca o Editorial debe verificar su correo y adjuntar exactamente dos archivos PDF de hasta 10 MB antes de generar su solicitud.
+El script crea el bucket privado `documentacion-institucional`. Cada Biblioteca o Editorial adjunta exactamente dos archivos PDF de hasta 10 MB al registrarse y luego verifica su correo para consultar la solicitud.
+
+### Registro institucional con documentos
+
+Bibliotecas y editoriales adjuntan los dos PDF en el mismo formulario de registro. La carga se procesa en una Edge Function para que la clave administrativa nunca quede expuesta en el navegador.
+
+Configurar el origen autorizado y desplegar la función:
+
+```bash
+npx supabase secrets set APP_ORIGIN=http://localhost:5173
+npx supabase functions deploy registro-institucional
+```
+
+Para un entorno publicado, reemplazar `APP_ORIGIN` por el dominio HTTPS real. La función utiliza las claves de Supabase que el entorno incorpora automáticamente; no deben copiarse claves secretas a `.env.local`.
 
 ## Verificación antes de publicar una rama
 

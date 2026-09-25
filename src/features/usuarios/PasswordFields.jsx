@@ -2,6 +2,7 @@ import { Check, Eye, EyeOff, X } from 'lucide-react'
 import { useState } from 'react'
 
 import { obtenerEstadoContrasena } from './authApi'
+import { limpiarValidacion, mostrarValidacionEspanol } from './formValidation'
 
 const INPUT =
   'w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2.5 pr-11 text-sm text-slate-100 placeholder:text-slate-500 focus:border-(--color-brand-secondary) focus:outline-none focus:ring-2 focus:ring-(--color-brand-primary)/30'
@@ -19,6 +20,8 @@ export function PasswordInput({ id, etiqueta, value, onChange, autoComplete, des
           required
           value={value}
           onChange={onChange}
+          onInput={limpiarValidacion}
+          onInvalid={mostrarValidacionEspanol}
           aria-describedby={describedBy}
           aria-invalid={invalid}
           className={INPUT}

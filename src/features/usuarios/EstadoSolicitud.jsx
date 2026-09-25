@@ -1,8 +1,6 @@
-import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { useAuth } from './useAuth'
-import { enviarDocumentacionInstitucional, validarDocumentos } from './authApi'
 
 const ETIQUETAS_ESTADO = {
   pendiente: 'Pendiente de revisión',
@@ -11,11 +9,7 @@ const ETIQUETAS_ESTADO = {
 }
 
 export default function EstadoSolicitud() {
-  const { cargando, estaAutenticado, perfil, solicitud, usuarioAuth, refrescar, cerrarSesion } = useAuth()
-  const [documentos, setDocumentos] = useState([])
-  const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState(null)
-  const [exito, setExito] = useState(null)
+  const { cargando, estaAutenticado, perfil, solicitud, cerrarSesion } = useAuth()
 
   if (cargando) return <p className="py-16 text-center text-slate-400">Consultando tu solicitud…</p>
   if (!estaAutenticado) return <Navigate to="/ingresar" replace />
@@ -29,28 +23,6 @@ export default function EstadoSolicitud() {
         <p className="mt-3 text-slate-400">Revisá tu correo electrónico para activar la cuenta.</p>
       </section>
     )
-  }
-
-  const enviar = async (evento) => {
-    evento.preventDefault()
-    const validacion = validarDocumentos(documentos)
-    if (validacion) {
-      setError(validacion)
-      return
-    }
-
-    setEnviando(true)
-    setError(null)
-    setExito(null)
-    try {
-      await enviarDocumentacionInstitucional(documentos, usuarioAuth.id)
-      await refrescar()
-      setExito('La documentación fue enviada y la solicitud quedó pendiente de revisión.')
-    } catch (fallo) {
-      setError(fallo.message)
-    } finally {
-      setEnviando(false)
-    }
   }
 
   return (
@@ -72,31 +44,9 @@ export default function EstadoSolicitud() {
           </p>
         </div>
       ) : (
-        <form onSubmit={enviar} className="space-y-5">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Documentación respaldatoria</h2>
-            <p className="mt-1 text-sm leading-6 text-slate-400">
-              Adjuntá exactamente dos archivos PDF que permitan acreditar la existencia o representación de la institución. Cada archivo puede pesar hasta 10 MB.
-            </p>
-          </div>
-          <input
-            type="file"
-            accept="application/pdf,.pdf"
-            multiple
-            required
-            onChange={(evento) => {
-              setDocumentos([...evento.target.files])
-              setError(null)
-            }}
-            className="block w-full rounded-lg border border-dashed border-slate-600 bg-slate-950/50 p-4 text-sm text-slate-300 file:mr-4 file:rounded-md file:border-0 file:bg-(--color-brand-primary) file:px-4 file:py-2 file:font-semibold file:text-white"
-          />
-          <p className="text-xs text-slate-500">Seleccionados: {documentos.length} de 2 archivos.</p>
-          {error && <p role="alert" className="rounded-lg bg-red-950/50 p-3 text-sm text-red-200">{error}</p>}
-          {exito && <p role="status" className="rounded-lg bg-emerald-950/40 p-3 text-sm text-emerald-200">{exito}</p>}
-          <button type="submit" disabled={enviando} className="w-full rounded-lg bg-(--color-brand-primary) px-5 py-2.5 font-semibold text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60">
-            {enviando ? 'Enviando documentos…' : 'Enviar solicitud'}
-          </button>
-        </form>
+        <div role="alert" className="rounded-xl border border-red-900/50 bg-red-950/30 p-5 text-sm leading-6 text-red-100">
+          No encontramos la solicitud institucional asociada. Los documentos se adjuntan durante el registro; contactá a la administración para revisar esta cuenta.
+        </div>
       )}
 
       <button type="button" onClick={cerrarSesion} className="text-sm font-semibold text-slate-400 hover:text-white">Cerrar sesión</button>
