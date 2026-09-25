@@ -35,7 +35,7 @@ export default function RecuperarContrasena() {
         </div>
       ) : (
         <form onSubmit={enviar} className="mt-6 space-y-5">
-          <label htmlFor="recuperar-email" className="block space-y-1.5 text-sm font-medium text-slate-300">
+          <label htmlFor="recuperar-email" className="block space-y-2.5 text-sm font-medium text-slate-300">
             <span>Correo electrónico</span>
             <input id="recuperar-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2.5 text-slate-100 focus:outline-none focus:ring-2 focus:ring-(--color-brand-primary)/40" />
           </label>

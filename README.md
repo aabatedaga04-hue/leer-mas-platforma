@@ -45,6 +45,8 @@ Para el CU01, configurar en Supabase Auth:
 - URL de recuperación local: `http://localhost:5173/restablecer-contrasena`.
 - Contraseña mínima del servidor de al menos 8 caracteres. La aplicación además exige una mayúscula, una minúscula y un carácter especial.
 
+El registro consulta el catálogo público de CountriesNow para ofrecer países, prefijos telefónicos y localidades normalizadas. No requiere una clave adicional y muestra un error recuperable si el servicio no está disponible.
+
 El script crea el bucket privado `documentacion-institucional`. Cada Biblioteca o Editorial debe verificar su correo y adjuntar exactamente dos archivos PDF de hasta 10 MB antes de generar su solicitud.
 
 ## Verificación antes de publicar una rama

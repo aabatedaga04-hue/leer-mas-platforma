@@ -25,6 +25,15 @@ export class AuthError extends Error {
   }
 }
 
+export function obtenerEstadoContrasena(contrasena = '') {
+  return [
+    { id: 'longitud', etiqueta: '8 caracteres como mínimo', cumple: contrasena.length >= 8 },
+    { id: 'mayuscula', etiqueta: 'Una letra mayúscula', cumple: /[A-ZÁÉÍÓÚÑ]/.test(contrasena) },
+    { id: 'minuscula', etiqueta: 'Una letra minúscula', cumple: /[a-záéíóúñ]/.test(contrasena) },
+    { id: 'especial', etiqueta: 'Un carácter especial', cumple: /[^\p{L}\p{N}\s]/u.test(contrasena) },
+  ]
+}
+
 function traducirError(error, respaldo = 'No fue posible completar la operación.') {
   const mensaje = error?.message ?? ''
   const coincidencia = MENSAJES_AUTH.find(([patron]) => patron.test(mensaje))
@@ -32,12 +41,9 @@ function traducirError(error, respaldo = 'No fue posible completar la operación
 }
 
 export function validarContrasena(contrasena) {
-  const errores = []
-  if (contrasena.length < 8) errores.push('tener al menos 8 caracteres')
-  if (!/[A-ZÁÉÍÓÚÑ]/.test(contrasena)) errores.push('incluir una mayúscula')
-  if (!/[a-záéíóúñ]/.test(contrasena)) errores.push('incluir una minúscula')
-  if (!/[^\p{L}\p{N}\s]/u.test(contrasena)) errores.push('incluir un carácter especial')
-  return errores
+  return obtenerEstadoContrasena(contrasena)
+    .filter(({ cumple }) => !cumple)
+    .map(({ etiqueta }) => etiqueta.toLowerCase())
 }
 
 function urlAplicacion(ruta) {
@@ -49,7 +55,7 @@ function metadataRegistro(datos) {
     tipo_usuario: datos.tipoUsuario,
     nombre: datos.nombre.trim(),
     apellido: datos.apellido.trim(),
-    telefono: datos.telefono.trim(),
+    telefono: `${datos.codigoPais} ${datos.telefono}`.trim(),
     pais: datos.pais.trim(),
     localidad: datos.localidad.trim(),
     politicas_aceptadas: 'true',
@@ -81,7 +87,7 @@ function metadataRegistro(datos) {
 export async function registrarUsuario(datos) {
   const erroresContrasena = validarContrasena(datos.contrasena)
   if (erroresContrasena.length) {
-    throw new AuthError(`La contraseña debe ${erroresContrasena.join(', ')}.`)
+    throw new AuthError('La contraseña no cumple todos los requisitos de seguridad.')
   }
   if (datos.contrasena !== datos.confirmacion) {
     throw new AuthError('Las contraseñas no coinciden.')
@@ -135,7 +141,7 @@ export async function solicitarRecuperacion(email) {
 
 export async function actualizarContrasena(contrasena) {
   const errores = validarContrasena(contrasena)
-  if (errores.length) throw new AuthError(`La contraseña debe ${errores.join(', ')}.`)
+  if (errores.length) throw new AuthError('La contraseña no cumple todos los requisitos de seguridad.')
 
   const { error } = await supabase.auth.updateUser({ password: contrasena })
   if (error) throw traducirError(error, 'No fue posible actualizar la contraseña.')
