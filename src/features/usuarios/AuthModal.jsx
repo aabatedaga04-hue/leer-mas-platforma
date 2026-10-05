@@ -345,7 +345,7 @@ function Registro() {
 
         {datos.tipoUsuario === TIPO_USUARIO.LECTOR_ESCRITOR && (
           <div>
-            <Campo id="registro-apodo" etiqueta="Alias o nombre de usuario" ayuda="Será el nombre visible para otros lectores y escritores." autoComplete="username" required minLength={3} maxLength={50} value={datos.apodo} onChange={actualizar('apodo')} />
+            <Campo id="registro-apodo" etiqueta="Alias" ayuda="Será el nombre visible para otros lectores y escritores." autoComplete="username" required minLength={3} maxLength={50} value={datos.apodo} onChange={actualizar('apodo')} />
             {estadoAlias && (
               <p role="status" className={`mt-2 text-xs ${estadoAlias === 'disponible' ? 'text-emerald-300' : estadoAlias === 'ocupado' || estadoAlias === 'error' ? 'text-red-300' : 'text-slate-500'}`}>
                 {estadoAlias === 'consultando' && 'Comprobando disponibilidad…'}
