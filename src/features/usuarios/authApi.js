@@ -29,7 +29,6 @@ export class AuthError extends Error {
     this.code = code
   }
 }
-
 export function obtenerEstadoContrasena(contrasena = '') {
   return [
     { id: 'longitud', etiqueta: '8 caracteres como mínimo', cumple: contrasena.length >= 8 },
@@ -293,4 +292,3 @@ export async function enviarDocumentacionInstitucional(documentos, idUsuario) {
     throw traducirError(error, 'No fue posible enviar la documentación.')
   }
 }
-
