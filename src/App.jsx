@@ -16,6 +16,7 @@ import { AuthProvider } from './features/usuarios/AuthProvider'
 import { ControlesSesion, DesviarCuentaPendiente } from './features/usuarios/ControlesSesion'
 import DocumentoLegalMvp from './features/usuarios/DocumentoLegalMvp'
 import EstadoSolicitud from './features/usuarios/EstadoSolicitud'
+import MiPerfil from './features/usuarios/MiPerfil'
 import RecuperarContrasena from './features/usuarios/RecuperarContrasena'
 import RestablecerContrasena from './features/usuarios/RestablecerContrasena'
 import RutaProtegida from './features/usuarios/RutaProtegida'
@@ -46,7 +47,7 @@ function AppContent() {
       <DesviarCuentaPendiente />
 
       {/* HEADER / BARRA DE NAVEGACIÓN */}
-      <header className="bg-slate-900/90 backdrop-blur-sm border-b border-(--color-brand-secondary)/30 px-6 py-3 flex justify-between items-center sticky top-0 z-50">
+      <header className="bg-slate-900/90 backdrop-blur-sm border-b border-(--color-brand-secondary)/30 px-6 py-3 flex flex-wrap justify-between gap-3 items-center sticky top-0 z-50">
 
         {/* LOGO CON IMAGEN Y NOMBRE */}
         <NavLink
@@ -67,7 +68,7 @@ function AppContent() {
         {!estaPendiente && (
           <nav
             aria-label="Navegación principal"
-            className="flex gap-2 text-sm bg-slate-950/80 p-1.5 rounded-full border border-(--color-brand-secondary)/30"
+            className="order-3 flex w-full gap-2 overflow-x-auto whitespace-nowrap rounded-full border border-(--color-brand-secondary)/30 bg-slate-950/80 p-1.5 text-sm sm:order-none sm:w-auto"
           >
             <NavLink to="/" end className={clasesNav}>
               Inicio
@@ -76,6 +77,12 @@ function AppContent() {
             <NavLink to="/catalogo" className={clasesNav}>
               Catálogo
             </NavLink>
+
+            {estaActivo && (
+              <NavLink to="/mi-perfil" className={clasesNav}>
+                Mi perfil
+              </NavLink>
+            )}
 
             {estaActivo && perfil?.tipo_usuario === 'biblioteca' && (
               <NavLink to="/gestion-prestamos" className={clasesNav}>
@@ -101,6 +108,7 @@ function AppContent() {
             <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
             <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
             <Route path="/estado-solicitud" element={<EstadoSolicitud />} />
+            <Route path="/mi-perfil" element={<RutaProtegida><MiPerfil /></RutaProtegida>} />
             <Route path="/terminos" element={<DocumentoLegalMvp tipo="terminos" />} />
             <Route path="/privacidad" element={<DocumentoLegalMvp tipo="privacidad" />} />
 
