@@ -42,8 +42,8 @@ Plataforma web de la Fundación Literaria Comunitaria para descubrir obras, publ
 Para el CU01, configurar en Supabase Auth:
 
 - Confirmación de correo habilitada.
-- URL local permitida: `http://localhost:5173/**`.
-- URL de recuperación local: `http://localhost:5173/restablecer-contrasena`.
+- URLs locales permitidas: `http://localhost:5173/**` y `http://127.0.0.1:5173/**`.
+- URLs de recuperación locales: `http://localhost:5173/restablecer-contrasena` y `http://127.0.0.1:5173/restablecer-contrasena`.
 - Contraseña mínima del servidor de al menos 8 caracteres. La aplicación además exige una mayúscula, una minúscula y un carácter especial.
 
 El registro consulta el catálogo público de CountriesNow para ofrecer países, prefijos telefónicos y localidades normalizadas. No requiere una clave adicional y muestra un error recuperable si el servicio no está disponible.
@@ -57,7 +57,7 @@ Bibliotecas y editoriales adjuntan los dos PDF en el mismo formulario de registr
 Configurar el origen autorizado y desplegar la función:
 
 ```bash
-npx supabase secrets set APP_ORIGIN=http://localhost:5173
+npx supabase secrets set APP_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 npx supabase functions deploy registro-institucional
 ```
 
