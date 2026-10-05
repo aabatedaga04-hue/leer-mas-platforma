@@ -21,6 +21,7 @@ import RecuperarContrasena from './features/usuarios/RecuperarContrasena'
 import RestablecerContrasena from './features/usuarios/RestablecerContrasena'
 import RutaProtegida from './features/usuarios/RutaProtegida'
 import VerificarCorreo from './features/usuarios/VerificarCorreo'
+import VistaPreviaPerfil from './features/usuarios/VistaPreviaPerfil'
 import { useAuth } from './features/usuarios/useAuth'
 
 const CLASES_FOCO =
@@ -109,6 +110,7 @@ function AppContent() {
             <Route path="/restablecer-contrasena" element={<RestablecerContrasena />} />
             <Route path="/estado-solicitud" element={<EstadoSolicitud />} />
             <Route path="/mi-perfil" element={<RutaProtegida><MiPerfil /></RutaProtegida>} />
+            {import.meta.env.DEV && <Route path="/vista-previa-cu02" element={<VistaPreviaPerfil />} />}
             <Route path="/terminos" element={<DocumentoLegalMvp tipo="terminos" />} />
             <Route path="/privacidad" element={<DocumentoLegalMvp tipo="privacidad" />} />
 
