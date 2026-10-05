@@ -57,11 +57,13 @@ Bibliotecas y editoriales adjuntan los dos PDF en el mismo formulario de registr
 Configurar el origen autorizado y desplegar la función:
 
 ```bash
+npx supabase login
+npx supabase link --project-ref ID_DEL_PROYECTO
 npx supabase secrets set APP_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
 npx supabase functions deploy registro-institucional
 ```
 
-Para un entorno publicado, reemplazar `APP_ORIGIN` por el dominio HTTPS real. La función utiliza las claves de Supabase que el entorno incorpora automáticamente; no deben copiarse claves secretas a `.env.local`.
+El identificador del proyecto se obtiene en el panel de Supabase; no es una clave secreta. Para un entorno publicado, agregar el dominio HTTPS real a `APP_ORIGIN` (separado por comas de los orígenes locales que se quieran conservar) y a las URL de redirección de Auth. La función utiliza las claves que Supabase incorpora automáticamente; no deben copiarse claves secretas a `.env.local`.
 
 ## Verificación antes de publicar una rama
 
