@@ -276,8 +276,8 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
         <div className="grid gap-2 min-[520px]:grid-cols-2">
           {campo('nombre', 'Nombre', perfil.nombre, entrada('nombre', 'Nombre', { required: true, maxLength: 100, autoComplete: 'given-name', autoFocus: true }))}
           {campo('apellido', 'Apellido', perfil.apellido, entrada('apellido', 'Apellido', { required: true, maxLength: 100, autoComplete: 'family-name', autoFocus: true }))}
-          {esPersonal && campo('apodo', 'Alias o nombre de usuario', perfil.detalle?.apodo, <>
-            {entrada('apodo', 'Alias o nombre de usuario', { required: true, minLength: 3, maxLength: 50, autoFocus: true })}
+          {esPersonal && campo('apodo', 'Alias', perfil.detalle?.apodo, <>
+            {entrada('apodo', 'Alias', { required: true, minLength: 3, maxLength: 50, autoFocus: true })}
             {estadoAlias && <p role="status" className={`mt-2 text-xs ${estadoAlias === 'disponible' ? 'text-emerald-300' : 'text-red-300'}`}>{estadoAlias === 'disponible' ? '✓ El alias está disponible.' : estadoAlias === 'ocupado' ? 'Ese alias ya está en uso.' : 'No pudimos comprobarlo. Se verificará al guardar.'}</p>}
           </>, { nota: perfilDemostracion ? 'La disponibilidad del alias no se comprueba en la vista previa.' : null })}
           {campo('email', 'Correo de acceso', perfil.email, null, { editable: false, nota: 'El cambio de correo requiere verificación; llegará en otra etapa.' })}
