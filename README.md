@@ -34,9 +34,10 @@ Plataforma web de la Fundación Literaria Comunitaria para descubrir obras, publ
 
 ## Base de datos
 
-- Proyecto nuevo: ejecutar `database/schema_LEER_supabase.sql`.
-- Proyecto que ya tiene el esquema anterior: ejecutar `database/cu01_autenticacion_registro.sql`.
-- Si el primer script del CU01 ya fue aplicado: ejecutar `database/cu01_mejoras_registro.sql`.
+- Proyecto nuevo: ejecutar `database/schema_LEER_supabase.sql` y después los dos scripts de CU01 indicados abajo. El esquema base se conserva igual al de `main` para evitar conflictos con otros módulos.
+- Proyecto con el esquema base ya creado: ejecutar `database/cu01_autenticacion_registro.sql` y luego `database/cu01_politicas_transversales.sql`, en ese orden y sin habilitar registros entre ambos pasos.
+- `cu01_politicas_transversales.sql` limita las acciones de cuentas pendientes en tablas de Contenido y Bibliotecas. Requiere revisión de los responsables de esos módulos antes de integrarse a `main`.
+- `database/cu01_mejoras_registro.sql` es solo para una instalación donde ya se hubiera ejecutado una versión anterior del primer script de CU01; no se ejecuta después de la versión actual.
 - Los demás scripts de `database/` agregan funciones, vistas y datos del catálogo.
 
 Para el CU01, configurar en Supabase Auth:
