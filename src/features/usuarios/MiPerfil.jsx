@@ -28,6 +28,7 @@ function datosDesdePerfil(perfil) {
     localidad: perfil?.localidad ?? '',
     apodo: perfil?.detalle?.apodo ?? '',
     direccion: perfil?.detalle?.direccion ?? '',
+    nombreFantasia: perfil?.detalle?.nombre_fantasia ?? '',
     sitioWeb: perfil?.detalle?.sitio_web ?? '',
   }
 }
@@ -244,6 +245,8 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
   const esEditorial = perfil.tipo_usuario === 'editorial'
   const telefono = datos.telefono.match(/^(\+[0-9-]{1,8})\s*(.*)$/)
   const ubicacion = [perfil.localidad, perfil.provincia, perfil.pais].filter(Boolean).join(', ')
+  const nombreVisible = esEditorial ? perfil.detalle?.nombre_fantasia : `${perfil.nombre ?? ''} ${perfil.apellido ?? ''}`.trim()
+  const iniciales = nombreVisible?.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join('').toUpperCase() || 'LE'
   const campo = (clave, etiqueta, valor, editor, opciones = {}) => (
     <CampoPerfil key={clave} etiqueta={etiqueta} valor={valor} activo={campoActivo === clave}
       onEditar={() => solicitarEdicion(clave)} onGuardar={guardar} onCancelar={cancelar}
@@ -257,7 +260,7 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
   return (
     <section className="mx-auto max-w-4xl space-y-4 pb-10">
       <header className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4">
-        <div aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-(--color-brand-primary)/25 font-serif text-xl text-(--color-brand-cream)">{perfil.nombre?.[0]}{perfil.apellido?.[0]}</div>
+        <div aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-(--color-brand-primary)/25 font-serif text-xl text-(--color-brand-cream)">{iniciales}</div>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-(--color-brand-secondary)">Tu espacio en LEER+</p>
           <h1 className="font-serif text-2xl leading-tight text-(--color-brand-cream)">Mi perfil</h1>
@@ -274,8 +277,8 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
           <p className="text-xs text-slate-500">Usá el lápiz para cambiar un dato</p>
         </div>
         <div className="grid gap-2 min-[520px]:grid-cols-2">
-          {campo('nombre', 'Nombre', perfil.nombre, entrada('nombre', 'Nombre', { required: true, maxLength: 100, autoComplete: 'given-name', autoFocus: true }))}
-          {campo('apellido', 'Apellido', perfil.apellido, entrada('apellido', 'Apellido', { required: true, maxLength: 100, autoComplete: 'family-name', autoFocus: true }))}
+          {!esEditorial && campo('nombre', 'Nombre', perfil.nombre, entrada('nombre', 'Nombre', { required: true, maxLength: 100, autoComplete: 'given-name', autoFocus: true }))}
+          {!esEditorial && campo('apellido', 'Apellido', perfil.apellido, entrada('apellido', 'Apellido', { required: true, maxLength: 100, autoComplete: 'family-name', autoFocus: true }))}
           {esPersonal && campo('apodo', 'Alias', perfil.detalle?.apodo, <>
             {entrada('apodo', 'Alias', { required: true, minLength: 3, maxLength: 50, autoFocus: true })}
             {estadoAlias && <p role="status" className={`mt-2 text-xs ${estadoAlias === 'disponible' ? 'text-emerald-300' : 'text-red-300'}`}>{estadoAlias === 'disponible' ? '✓ El alias está disponible.' : estadoAlias === 'ocupado' ? 'Ese alias ya está en uso.' : 'No pudimos comprobarlo. Se verificará al guardar.'}</p>}
@@ -302,6 +305,7 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
           </div>
           <div className="grid gap-2 min-[520px]:grid-cols-2">
             {esBiblioteca && campo('institucion', 'Nombre verificado', perfil.detalle?.nombre, null, { editable: false })}
+            {esEditorial && campo('nombreFantasia', 'Nombre de fantasía', perfil.detalle?.nombre_fantasia, entrada('nombreFantasia', 'Nombre de fantasía', { required: true, maxLength: 150, autoFocus: true }), { nota: 'Es el nombre comercial que se muestra públicamente en LEER+.' })}
             {esEditorial && campo('institucion', 'Razón social verificada', perfil.detalle?.razon_social, null, { editable: false })}
             {campo('cuit', 'CUIT verificado', perfil.detalle?.cuit, null, { editable: false })}
             {esBiblioteca && campo('direccion', 'Dirección', perfil.detalle?.direccion, entrada('direccion', 'Dirección', { required: true, maxLength: 255, autoComplete: 'street-address', autoFocus: true }), { amplio: true })}

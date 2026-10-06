@@ -1,12 +1,14 @@
 export function validarPerfilBasico(datos, tipoUsuario) {
   const errores = []
   const obligatorios = [
-    ['nombre', 'nombre', 100],
-    ['apellido', 'apellido', 100],
     ['pais', 'país', 100],
     ['provincia', 'provincia o región', 120],
     ['localidad', 'localidad', 150],
   ]
+
+  if (tipoUsuario !== 'editorial') {
+    obligatorios.unshift(['nombre', 'nombre', 100], ['apellido', 'apellido', 100])
+  }
 
   for (const [campo, etiqueta, maximo] of obligatorios) {
     const valor = datos[campo]?.trim() ?? ''
@@ -27,6 +29,12 @@ export function validarPerfilBasico(datos, tipoUsuario) {
     const direccion = datos.direccion?.trim() ?? ''
     if (!direccion) errores.push('Completá la dirección de la biblioteca.')
     else if (direccion.length > 255) errores.push('La dirección no puede superar 255 caracteres.')
+  }
+
+  if (tipoUsuario === 'editorial') {
+    const nombreFantasia = datos.nombreFantasia?.trim() ?? ''
+    if (!nombreFantasia) errores.push('Completá el nombre de fantasía de la editorial.')
+    else if (nombreFantasia.length > 150) errores.push('El nombre de fantasía no puede superar 150 caracteres.')
   }
 
   if (tipoUsuario === 'editorial' && datos.sitioWeb?.trim()) {

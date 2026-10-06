@@ -6,7 +6,7 @@ import { validarPerfilBasico } from './perfilValidation.js'
 const datos = {
   nombre: 'Ana', apellido: 'Pérez', telefono: '+54 11 1234-5678',
   pais: 'Argentina', provincia: 'Buenos Aires', localidad: 'La Plata',
-  apodo: 'ana_lee', direccion: 'Calle 1', sitioWeb: 'https://editorial.example.com',
+  apodo: 'ana_lee', direccion: 'Calle 1', nombreFantasia: 'Tinta Norte', sitioWeb: 'https://editorial.example.com',
 }
 
 test('acepta el perfil básico de lector-escritor', () => {
@@ -29,6 +29,10 @@ test('la dirección de biblioteca es obligatoria', () => {
 })
 
 test('la editorial solo acepta sitios HTTP o HTTPS válidos', () => {
-  assert.deepEqual(validarPerfilBasico(datos, 'editorial'), [])
+  assert.deepEqual(validarPerfilBasico({ ...datos, nombre: '', apellido: '' }, 'editorial'), [])
   assert.ok(validarPerfilBasico({ ...datos, sitioWeb: 'javascript:alert(1)' }, 'editorial').length > 0)
+})
+
+test('la editorial exige un nombre de fantasía', () => {
+  assert.ok(validarPerfilBasico({ ...datos, nombreFantasia: '' }, 'editorial').some((error) => error.includes('fantasía')))
 })

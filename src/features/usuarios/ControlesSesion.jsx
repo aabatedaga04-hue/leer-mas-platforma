@@ -26,6 +26,9 @@ export function DesviarCuentaPendiente() {
 export function ControlesSesion() {
   const { perfil, estaAutenticado, estaPendiente, cerrarSesion } = useAuth()
   const navegar = useNavigate()
+  const nombreCuenta = perfil?.tipo_usuario === 'editorial'
+    ? perfil?.detalle?.nombre_fantasia
+    : perfil?.nombre
 
   const salir = async () => {
     await cerrarSesion()
@@ -48,7 +51,7 @@ export function ControlesSesion() {
       <span className="text-xs font-semibold text-(--color-brand-cream) bg-(--color-brand-primary)/40 px-2 py-0.5 rounded-md border border-(--color-brand-primary)/50">
         {estaPendiente ? 'Solicitud pendiente' : ETIQUETAS_ROL[perfil?.tipo_usuario] || 'Usuario'}
       </span>
-      <span className="hidden text-sm font-medium text-slate-100 sm:inline">{perfil?.nombre || perfil?.email}</span>
+      <span className="hidden text-sm font-medium text-slate-100 sm:inline">{nombreCuenta || perfil?.email}</span>
       <button
         type="button"
         onClick={salir}

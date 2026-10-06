@@ -5,10 +5,10 @@ Esta rama parte de `feature/cu01-autenticacion-registro` porque necesita su sesi
 ## Alcance implementado
 
 - Ruta protegida `/mi-perfil` para cuentas activas.
-- Consulta y edición de nombre, apellido, teléfono y ubicación.
+- Consulta y edición de teléfono y ubicación; nombre y apellido solo aplican a cuentas personales y de Biblioteca.
 - Cuenta Lector-Escritor: consulta y cambio del alias único.
 - Biblioteca: consulta del nombre/CUIT verificados y edición de dirección.
-- Editorial: consulta de razón social/CUIT verificados y edición de sitio web.
+- Editorial: consulta de razón social/CUIT verificados y edición de nombre de fantasía y sitio web. La cuenta representa a la institución y no almacena nombre/apellido de una persona como identidad del perfil.
 - Confirmación antes de descartar cambios; errores y confirmaciones en español.
 
 El correo, el CUIT y el nombre/razón social institucional son de solo lectura. No hay botón que simule un trámite todavía no implementado.

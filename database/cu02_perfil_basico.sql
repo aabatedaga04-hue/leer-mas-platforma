@@ -8,6 +8,12 @@ REVOKE UPDATE ON public.lector_escritor FROM PUBLIC, anon, authenticated;
 REVOKE UPDATE ON public.biblioteca FROM PUBLIC, anon, authenticated;
 REVOKE UPDATE ON public.editorial FROM PUBLIC, anon, authenticated;
 
+-- Elimina la firma de la primera versión para que no quede una RPC antigua
+-- disponible sin el nombre de fantasía de Editorial.
+DROP FUNCTION IF EXISTS public.fn_actualizar_perfil_basico(
+    TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
+);
+
 CREATE OR REPLACE FUNCTION public.fn_actualizar_perfil_basico(
     p_nombre TEXT,
     p_apellido TEXT,
@@ -17,6 +23,7 @@ CREATE OR REPLACE FUNCTION public.fn_actualizar_perfil_basico(
     p_localidad TEXT,
     p_apodo TEXT DEFAULT NULL,
     p_direccion TEXT DEFAULT NULL,
+    p_nombre_fantasia TEXT DEFAULT NULL,
     p_sitio_web TEXT DEFAULT NULL
 )
 RETURNS VOID
@@ -41,12 +48,17 @@ BEGIN
         RAISE EXCEPTION 'Tu cuenta no esta habilitada para editar el perfil';
     END IF;
 
-    IF length(trim(COALESCE(p_nombre, ''))) NOT BETWEEN 1 AND 100
-        OR length(trim(COALESCE(p_apellido, ''))) NOT BETWEEN 1 AND 100
-        OR length(trim(COALESCE(p_pais, ''))) NOT BETWEEN 1 AND 100
+    IF length(trim(COALESCE(p_pais, ''))) NOT BETWEEN 1 AND 100
         OR length(trim(COALESCE(p_provincia, ''))) NOT BETWEEN 1 AND 120
         OR length(trim(COALESCE(p_localidad, ''))) NOT BETWEEN 1 AND 150 THEN
-        RAISE EXCEPTION 'Completa los datos de identidad y ubicacion';
+        RAISE EXCEPTION 'Completa los datos de ubicacion';
+    END IF;
+
+    IF v_tipo <> 'editorial' AND (
+        length(trim(COALESCE(p_nombre, ''))) NOT BETWEEN 1 AND 100
+        OR length(trim(COALESCE(p_apellido, ''))) NOT BETWEEN 1 AND 100
+    ) THEN
+        RAISE EXCEPTION 'Completa los datos de identidad';
     END IF;
 
     IF COALESCE(trim(p_telefono), '') !~ '^\+[0-9-]{1,8} [0-9 ()-]{6,20}$'
@@ -63,6 +75,9 @@ BEGIN
             RAISE EXCEPTION 'Completa una direccion de hasta 255 caracteres';
         END IF;
     ELSIF v_tipo = 'editorial' THEN
+        IF length(trim(COALESCE(p_nombre_fantasia, ''))) NOT BETWEEN 1 AND 150 THEN
+            RAISE EXCEPTION 'Completa un nombre de fantasia de hasta 150 caracteres';
+        END IF;
         IF p_sitio_web IS NOT NULL AND (
             length(trim(p_sitio_web)) > 255
             OR trim(p_sitio_web) !~* '^https?://[^[:space:]]+\.[^[:space:]]+$'
@@ -74,8 +89,8 @@ BEGIN
     END IF;
 
     UPDATE public.usuario
-    SET nombre = trim(p_nombre),
-        apellido = trim(p_apellido),
+    SET nombre = CASE WHEN v_tipo = 'editorial' THEN nombre ELSE trim(p_nombre) END,
+        apellido = CASE WHEN v_tipo = 'editorial' THEN apellido ELSE trim(p_apellido) END,
         telefono = trim(p_telefono),
         pais = trim(p_pais),
         provincia = trim(p_provincia),
@@ -92,17 +107,18 @@ BEGIN
         WHERE id_usuario = auth.uid();
     ELSE
         UPDATE public.editorial
-        SET sitio_web = NULLIF(trim(p_sitio_web), '')
+        SET nombre_fantasia = trim(p_nombre_fantasia),
+            sitio_web = NULLIF(trim(p_sitio_web), '')
         WHERE id_usuario = auth.uid();
     END IF;
 END;
 $$;
 
 REVOKE ALL ON FUNCTION public.fn_actualizar_perfil_basico(
-    TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
+    TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
 ) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.fn_actualizar_perfil_basico(
-    TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
+    TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT
 ) TO authenticated;
 
 COMMIT;

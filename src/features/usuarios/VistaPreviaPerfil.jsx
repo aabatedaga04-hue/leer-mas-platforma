@@ -17,9 +17,9 @@ const EJEMPLOS = {
   },
   editorial: {
     tipo_usuario: 'editorial', estado: 'activo',
-    nombre: 'Tomás', apellido: 'Pérez', email: 'editorial@ejemplo.com',
+    nombre: null, apellido: null, email: 'editorial@ejemplo.com',
     telefono: '+54 11 1234-5678', pais: 'Argentina', provincia: 'Buenos Aires', localidad: 'La Plata',
-    detalle: { razon_social: 'Editorial de Ejemplo', cuit: '30-00000000-0', sitio_web: 'https://ejemplo.com' },
+    detalle: { nombre_fantasia: 'Tinta Norte', razon_social: 'Editorial de Ejemplo S.A.', cuit: '30-00000000-0', sitio_web: 'https://ejemplo.com' },
   },
 }
 
@@ -41,8 +41,8 @@ export default function VistaPreviaPerfil() {
   const guardarLocalmente = (datos) => {
     setPerfil((actual) => ({
       ...actual,
-      nombre: datos.nombre,
-      apellido: datos.apellido,
+      nombre: tipo === 'editorial' ? null : datos.nombre,
+      apellido: tipo === 'editorial' ? null : datos.apellido,
       telefono: datos.telefono,
       pais: datos.pais,
       provincia: datos.provincia,
@@ -51,7 +51,7 @@ export default function VistaPreviaPerfil() {
         ...actual.detalle,
         ...(tipo === 'lector_escritor' && { apodo: datos.apodo }),
         ...(tipo === 'biblioteca' && { direccion: datos.direccion }),
-        ...(tipo === 'editorial' && { sitio_web: datos.sitioWeb }),
+        ...(tipo === 'editorial' && { nombre_fantasia: datos.nombreFantasia, sitio_web: datos.sitioWeb }),
       },
     }))
   }
