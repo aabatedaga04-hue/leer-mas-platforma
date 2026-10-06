@@ -5,6 +5,7 @@ La implementación de interfaz y estado de sesión pertenece a `src/features/usu
 ## Excepciones compartidas que requieren revisión
 
 - `database/cu01_autenticacion_registro.sql`: amplía el esquema base, agrega el alta desde Auth, documentos privados y funciones para el registro. Es obligatorio también para un proyecto nuevo, después del esquema base.
+- La cuenta Editorial representa a la institución: solicita nombre de fantasía, razón social y CUIT, pero no nombre/apellido de una persona.
 - `database/cu01_politicas_transversales.sql`: modifica políticas RLS de Contenido y Bibliotecas para impedir que cuentas institucionales pendientes utilicen sus funciones. Los responsables de esos módulos deben revisar esas políticas. Ambos scripts se aplican juntos, en orden, antes de permitir registros.
 - `supabase/functions/registro-institucional/`: la ubicación la exige el despliegue de Supabase Edge Functions. No usa el archivo `src/supabaseClient.js` ni expone credenciales administrativas al navegador.
 

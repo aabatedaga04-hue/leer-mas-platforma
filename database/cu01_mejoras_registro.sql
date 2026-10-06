@@ -9,6 +9,16 @@ BEGIN;
 ALTER TABLE public.usuario
     ADD COLUMN IF NOT EXISTS provincia VARCHAR(120);
 
+ALTER TABLE public.editorial
+    ADD COLUMN IF NOT EXISTS nombre_fantasia VARCHAR(150);
+
+UPDATE public.editorial
+SET nombre_fantasia = razon_social
+WHERE nombre_fantasia IS NULL OR trim(nombre_fantasia) = '';
+
+ALTER TABLE public.editorial
+    ALTER COLUMN nombre_fantasia SET NOT NULL;
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_lector_escritor_apodo_unico
     ON public.lector_escritor (lower(trim(apodo)));
 
@@ -106,9 +116,10 @@ BEGIN
                 NULLIF(trim(NEW.raw_user_meta_data->>'direccion'), '')
             );
         ELSE
-            INSERT INTO public.editorial (id_usuario, razon_social, cuit, sitio_web)
+            INSERT INTO public.editorial (id_usuario, nombre_fantasia, razon_social, cuit, sitio_web)
             VALUES (
                 NEW.id,
+                COALESCE(NULLIF(trim(NEW.raw_user_meta_data->>'nombre_fantasia'), ''), 'Editorial'),
                 trim(NEW.raw_user_meta_data->>'razon_social'),
                 v_cuit,
                 NULLIF(trim(NEW.raw_user_meta_data->>'sitio_web'), '')

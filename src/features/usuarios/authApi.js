@@ -57,8 +57,6 @@ function urlAplicacion(ruta) {
 function metadataRegistro(datos) {
   const comun = {
     tipo_usuario: datos.tipoUsuario,
-    nombre: datos.nombre.trim(),
-    apellido: datos.apellido.trim(),
     telefono: `${datos.codigoPais} ${datos.telefono}`.trim(),
     pais: datos.pais.trim(),
     provincia: datos.provincia.trim(),
@@ -69,12 +67,19 @@ function metadataRegistro(datos) {
   }
 
   if (datos.tipoUsuario === TIPO_USUARIO.LECTOR_ESCRITOR) {
-    return { ...comun, apodo: datos.apodo.trim() }
+    return {
+      ...comun,
+      nombre: datos.nombre.trim(),
+      apellido: datos.apellido.trim(),
+      apodo: datos.apodo.trim(),
+    }
   }
 
   if (datos.tipoUsuario === TIPO_USUARIO.BIBLIOTECA) {
     return {
       ...comun,
+      nombre: datos.nombre.trim(),
+      apellido: datos.apellido.trim(),
       cuit: datos.cuit.trim(),
       nombre_institucion: datos.nombreInstitucion.trim(),
       direccion: datos.direccion.trim(),
@@ -84,6 +89,7 @@ function metadataRegistro(datos) {
   return {
     ...comun,
     cuit: datos.cuit.trim(),
+    nombre_fantasia: datos.nombreFantasia.trim(),
     razon_social: datos.razonSocial.trim(),
     sitio_web: datos.sitioWeb.trim(),
   }
