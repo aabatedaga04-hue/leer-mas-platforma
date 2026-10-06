@@ -50,13 +50,17 @@ function validarEntrada(email: string, password: string, metadata: Record<string
     return 'La contraseña no cumple todos los requisitos de seguridad.'
   }
   if (!['biblioteca', 'editorial'].includes(texto(metadata.tipo_usuario))) return 'El tipo de institución no es válido.'
-  if (!texto(metadata.nombre, 100) || !texto(metadata.apellido, 100) || !texto(metadata.pais, 100) || !texto(metadata.provincia, 120) || !texto(metadata.localidad, 150)) {
-    return 'Completá todos los datos personales y de ubicación.'
+  if (!texto(metadata.pais, 100) || !texto(metadata.provincia, 120) || !texto(metadata.localidad, 150)) {
+    return 'Completá todos los datos de ubicación.'
   }
   if (metadata.politicas_aceptadas !== 'true') return 'Debés aceptar los Términos y la Política de Privacidad.'
   if (!/^\d{11}$/.test(texto(metadata.cuit).replace(/\D/g, ''))) return 'Ingresá un CUIT válido de 11 dígitos.'
-  if (metadata.tipo_usuario === 'biblioteca' && !texto(metadata.nombre_institucion, 150)) return 'Ingresá el nombre de la biblioteca.'
-  if (metadata.tipo_usuario === 'editorial' && !texto(metadata.razon_social, 150)) return 'Ingresá la razón social de la editorial.'
+  if (metadata.tipo_usuario === 'biblioteca' && (!texto(metadata.nombre, 100) || !texto(metadata.apellido, 100) || !texto(metadata.nombre_institucion, 150))) {
+    return 'Completá los datos de contacto y el nombre de la biblioteca.'
+  }
+  if (metadata.tipo_usuario === 'editorial' && (!texto(metadata.nombre_fantasia, 150) || !texto(metadata.razon_social, 150))) {
+    return 'Ingresá el nombre de fantasía y la razón social de la editorial.'
+  }
   if (documentos.length !== 2) return 'Adjuntá exactamente dos archivos PDF.'
   if (documentos.some((archivo) => archivo.type !== 'application/pdf')) return 'Los dos documentos deben estar en formato PDF.'
   if (documentos.some((archivo) => archivo.size < 1 || archivo.size > MAXIMO_PDF)) return 'Cada archivo PDF debe pesar como máximo 10 MB.'

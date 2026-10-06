@@ -24,7 +24,7 @@ const VACIO = {
   nombre: '', apellido: '', telefono: '', codigoPais: '', pais: '', paisCodigo: '', paisApi: '',
   provincia: '', provinciaCodigo: '', provinciaApi: '', localidad: '', email: '', contrasena: '', confirmacion: '',
   tipoUsuario: TIPO_USUARIO.LECTOR_ESCRITOR, apodo: '', cuit: '', nombreInstitucion: '',
-  direccion: '', razonSocial: '', sitioWeb: '', aceptaPoliticas: false,
+  direccion: '', nombreFantasia: '', razonSocial: '', sitioWeb: '', aceptaPoliticas: false,
 }
 
 const PERFILES = [
@@ -234,6 +234,7 @@ function Registro() {
   }
 
   const esInstitucion = datos.tipoUsuario !== TIPO_USUARIO.LECTOR_ESCRITOR
+  const esEditorial = datos.tipoUsuario === TIPO_USUARIO.EDITORIAL
   const contrasenaValida = validarContrasena(datos.contrasena).length === 0
   const contrasenasCoinciden = datos.contrasena === datos.confirmacion
 
@@ -328,8 +329,10 @@ function Registro() {
         </fieldset>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Campo id="registro-nombre" etiqueta="Nombre" autoComplete="given-name" required value={datos.nombre} onChange={actualizar('nombre')} />
-          <Campo id="registro-apellido" etiqueta="Apellido" autoComplete="family-name" required value={datos.apellido} onChange={actualizar('apellido')} />
+          {!esEditorial && <>
+            <Campo id="registro-nombre" etiqueta="Nombre" autoComplete="given-name" required value={datos.nombre} onChange={actualizar('nombre')} />
+            <Campo id="registro-apellido" etiqueta="Apellido" autoComplete="family-name" required value={datos.apellido} onChange={actualizar('apellido')} />
+          </>}
           <SearchableSelect id="registro-pais" etiqueta="País" value={datos.paisCodigo} options={paises} onSelect={seleccionarPais} placeholder="Buscá y seleccioná tu país" loading={cargandoPaises} error={errorPaises} required />
           <SearchableSelect id="registro-provincia" etiqueta="Provincia o región" value={datos.provinciaCodigo} options={provincias} onSelect={seleccionarProvincia} placeholder={datos.paisCodigo ? 'Buscá y seleccioná tu provincia' : 'Primero seleccioná un país'} disabled={!datos.paisCodigo} loading={cargandoProvincias} error={errorProvincias} required />
           <SearchableSelect id="registro-localidad" etiqueta="Localidad" value={datos.localidad} options={localidades} onSelect={seleccionarLocalidad} placeholder={datos.provinciaCodigo ? 'Buscá y seleccioná tu localidad' : 'Primero seleccioná una provincia'} disabled={!datos.provinciaCodigo} loading={cargandoLocalidades} error={errorLocalidades} required />
@@ -367,6 +370,7 @@ function Registro() {
 
         {datos.tipoUsuario === TIPO_USUARIO.EDITORIAL && (
           <div className="grid gap-5 rounded-xl border border-slate-800 bg-slate-950/30 p-4 sm:grid-cols-2">
+            <Campo id="registro-nombre-fantasia" etiqueta="Nombre de fantasía" ayuda="Es el nombre comercial que se mostrará públicamente en LEER+." required maxLength={150} value={datos.nombreFantasia} onChange={actualizar('nombreFantasia')} />
             <Campo id="registro-editorial" etiqueta="Razón social" required value={datos.razonSocial} onChange={actualizar('razonSocial')} />
             <Campo id="registro-cuit-editorial" etiqueta="CUIT" inputMode="numeric" required pattern="[0-9-]{11,13}" mensajePatron="Ingresá un CUIT de 11 dígitos, con o sin guiones." value={datos.cuit} onChange={actualizar('cuit')} />
             <div className="sm:col-span-2"><Campo id="registro-web" etiqueta="Sitio web (opcional)" type="url" value={datos.sitioWeb} onChange={actualizar('sitioWeb')} /></div>

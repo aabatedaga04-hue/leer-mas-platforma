@@ -26,6 +26,18 @@ ALTER TABLE public.usuario
     ADD COLUMN IF NOT EXISTS privacidad_version VARCHAR(30),
     ADD COLUMN IF NOT EXISTS aceptacion_politicas_en TIMESTAMPTZ;
 
+ALTER TABLE public.editorial
+    ADD COLUMN IF NOT EXISTS nombre_fantasia VARCHAR(150);
+
+-- Compatibilidad con editoriales preexistentes: se usa inicialmente la razón
+-- social y luego la institución puede elegir su nombre comercial desde CU02.
+UPDATE public.editorial
+SET nombre_fantasia = razon_social
+WHERE nombre_fantasia IS NULL OR trim(nombre_fantasia) = '';
+
+ALTER TABLE public.editorial
+    ALTER COLUMN nombre_fantasia SET NOT NULL;
+
 CREATE UNIQUE INDEX IF NOT EXISTS idx_biblioteca_cuit_unico
     ON public.biblioteca (regexp_replace(cuit, '[^0-9]', '', 'g'));
 
@@ -211,9 +223,10 @@ BEGIN
                 NULLIF(trim(NEW.raw_user_meta_data->>'direccion'), '')
             );
         ELSE
-            INSERT INTO public.editorial (id_usuario, razon_social, cuit, sitio_web)
+            INSERT INTO public.editorial (id_usuario, nombre_fantasia, razon_social, cuit, sitio_web)
             VALUES (
                 NEW.id,
+                COALESCE(NULLIF(trim(NEW.raw_user_meta_data->>'nombre_fantasia'), ''), 'Editorial'),
                 COALESCE(NULLIF(trim(NEW.raw_user_meta_data->>'razon_social'), ''), 'Editorial'),
                 v_cuit,
                 NULLIF(trim(NEW.raw_user_meta_data->>'sitio_web'), '')
