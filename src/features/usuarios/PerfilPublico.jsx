@@ -1,9 +1,10 @@
-import { Camera, Check, Eye, EyeOff, Pencil, X } from 'lucide-react'
+import { BookOpen, Camera, Check, ExternalLink, Eye, EyeOff, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import {
   GENEROS_PERFIL,
   INTERESES_LECTURA,
+  MAXIMO_ENLACES,
   MAXIMO_SELECCIONES,
   datosPublicosDesdePerfil,
   validarCampoPublico,
@@ -52,7 +53,53 @@ function ResumenEtiquetas({ valores, vacio }) {
   )
 }
 
+function ResumenEnlaces({ enlaces }) {
+  if (!enlaces.length) return <span className="text-slate-500">Todavía no agregaste enlaces.</span>
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {enlaces.map((enlace) => (
+        <li key={`${enlace.etiqueta}-${enlace.url}`}>
+          <a href={enlace.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-2.5 py-1 text-xs text-slate-200 hover:text-(--color-brand-cream)">
+            {enlace.etiqueta}<ExternalLink aria-hidden="true" className="size-3" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function ObrasPublicadas({ obras }) {
+  return (
+    <article className="min-[620px]:col-span-2 rounded-xl border border-slate-800/80 bg-slate-950/30 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Obras publicadas</h3>
+          <p className="mt-1 text-sm text-slate-100">{obras.length ? `${obras.length} obras vinculadas a tu perfil` : 'Todavía no publicaste obras en LEER+.'}</p>
+        </div>
+        <span className="grid size-9 place-items-center rounded-xl bg-(--color-brand-primary)/20 text-(--color-brand-cream)"><BookOpen aria-hidden="true" className="size-4" /></span>
+      </div>
+      {obras.length > 0 && (
+        <details className="mt-3 rounded-xl border border-slate-800 bg-slate-900/50 open:pb-2">
+          <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-(--color-brand-cream)">Ver listado de obras</summary>
+          <ul className="divide-y divide-slate-800 px-3">
+            {obras.map((obra) => (
+              <li key={obra.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+                <div><p className="font-medium text-slate-100">{obra.titulo}</p><p className="mt-0.5 text-xs text-slate-500">{obra.tipo} · {obra.fecha}</p></div>
+                <span className="rounded-full border border-emerald-700/40 bg-emerald-950/25 px-2.5 py-1 text-xs text-emerald-200">{obra.estado}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      <p className="mt-2 text-xs text-slate-500">Este acceso muestra las obras asociadas. Su publicación y administración corresponden al CU12.</p>
+    </article>
+  )
+}
+
 function SelectorEtiquetas({ opciones, seleccionadas, onChange, etiqueta }) {
+  const [busqueda, setBusqueda] = useState('')
+  const normalizar = (texto) => texto.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const opcionesVisibles = opciones.filter((opcion) => normalizar(opcion).includes(normalizar(busqueda.trim())))
   const alternar = (opcion) => {
     if (seleccionadas.includes(opcion)) onChange(seleccionadas.filter((valor) => valor !== opcion))
     else if (seleccionadas.length < MAXIMO_SELECCIONES) onChange([...seleccionadas, opcion])
@@ -61,8 +108,12 @@ function SelectorEtiquetas({ opciones, seleccionadas, onChange, etiqueta }) {
   return (
     <fieldset>
       <legend className="sr-only">{etiqueta}</legend>
+      <label className="mb-3 block space-y-1.5 text-xs font-semibold text-slate-300">
+        Buscar entre las opciones
+        <input type="search" value={busqueda} onChange={(evento) => setBusqueda(evento.target.value)} className={INPUT} placeholder="Ej.: papers, historia, tecnología…" />
+      </label>
       <div className="flex flex-wrap gap-2">
-        {opciones.map((opcion) => {
+        {opcionesVisibles.map((opcion) => {
           const elegida = seleccionadas.includes(opcion)
           return (
             <button key={opcion} type="button" aria-pressed={elegida} onClick={() => alternar(opcion)}
@@ -72,6 +123,7 @@ function SelectorEtiquetas({ opciones, seleccionadas, onChange, etiqueta }) {
           )
         })}
       </div>
+      {!opcionesVisibles.length && <p className="text-sm text-slate-500">No encontramos opciones con esa búsqueda.</p>}
       <p className="mt-2 text-xs text-slate-500">{seleccionadas.length} de {MAXIMO_SELECCIONES} seleccionados</p>
     </fieldset>
   )
@@ -111,6 +163,24 @@ export default function PerfilPublico({ perfil, onGuardar }) {
     setError(null)
   }
 
+  const actualizarEnlace = (indice, campo, valor) => {
+    setDatos((actual) => ({
+      ...actual,
+      enlacesExternos: actual.enlacesExternos.map((enlace, posicion) => posicion === indice ? { ...enlace, [campo]: valor } : enlace),
+    }))
+  }
+
+  const agregarEnlace = () => {
+    setDatos((actual) => actual.enlacesExternos.length >= MAXIMO_ENLACES ? actual : ({
+      ...actual,
+      enlacesExternos: [...actual.enlacesExternos, { etiqueta: '', url: '' }],
+    }))
+  }
+
+  const quitarEnlace = (indice) => {
+    setDatos((actual) => ({ ...actual, enlacesExternos: actual.enlacesExternos.filter((_, posicion) => posicion !== indice) }))
+  }
+
   const guardar = (campo) => (evento) => {
     evento.preventDefault()
     const errores = validarCampoPublico(datos, tipo, campo)
@@ -148,6 +218,9 @@ export default function PerfilPublico({ perfil, onGuardar }) {
   const visibilidadPerfil = datos.perfilVisible
     ? <span className="inline-flex items-center gap-1.5 text-emerald-300"><Eye aria-hidden="true" className="size-4" /> Perfil visible</span>
     : <span className="inline-flex items-center gap-1.5 text-slate-400"><EyeOff aria-hidden="true" className="size-4" /> Perfil privado</span>
+  const contactoPublico = datos.contactoVisible
+    ? <div className="space-y-0.5"><p className="text-emerald-300">Contacto visible</p><p className="text-xs text-slate-400">{[datos.emailContacto, datos.telefonoContacto].filter(Boolean).join(' · ')}</p></div>
+    : <span className="inline-flex items-center gap-1.5 text-slate-400"><EyeOff aria-hidden="true" className="size-4" /> Contacto oculto</span>
 
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5" aria-labelledby="perfil-publico-titulo">
@@ -181,8 +254,8 @@ export default function PerfilPublico({ perfil, onGuardar }) {
         </CampoPublico>
 
         {tipo !== 'biblioteca' && (
-          <CampoPublico etiqueta={tipo === 'editorial' ? 'Géneros de interés' : 'Géneros literarios'} valor={<ResumenEtiquetas valores={datos.generos} vacio="Todavía no seleccionaste géneros." />} activo={campoActivo === 'generos'} bloqueado={Boolean(campoActivo)} onEditar={() => editar('generos')} onGuardar={guardar('generos')} onCancelar={cancelar} amplio>
-            <SelectorEtiquetas etiqueta="Seleccionar géneros" opciones={GENEROS_PERFIL} seleccionadas={datos.generos} onChange={(generos) => setDatos((actual) => ({ ...actual, generos }))} />
+          <CampoPublico etiqueta={tipo === 'editorial' ? 'Géneros, áreas y formatos de interés' : 'Géneros, áreas y formatos'} valor={<ResumenEtiquetas valores={datos.generos} vacio="Todavía no seleccionaste géneros, áreas o formatos." />} activo={campoActivo === 'generos'} bloqueado={Boolean(campoActivo)} onEditar={() => editar('generos')} onGuardar={guardar('generos')} onCancelar={cancelar} amplio>
+            <SelectorEtiquetas etiqueta="Seleccionar géneros, áreas y formatos" opciones={GENEROS_PERFIL} seleccionadas={datos.generos} onChange={(generos) => setDatos((actual) => ({ ...actual, generos }))} />
           </CampoPublico>
         )}
 
@@ -198,8 +271,33 @@ export default function PerfilPublico({ perfil, onGuardar }) {
           </CampoPublico>
         )}
 
+        <CampoPublico etiqueta="Enlaces externos" valor={<ResumenEnlaces enlaces={datos.enlacesExternos} />} nota="Podés vincular un sitio, catálogo institucional, red profesional, ORCID u otro espacio relevante." activo={campoActivo === 'enlacesExternos'} bloqueado={Boolean(campoActivo)} onEditar={() => editar('enlacesExternos')} onGuardar={guardar('enlacesExternos')} onCancelar={cancelar} amplio>
+          <div className="space-y-2">
+            {datos.enlacesExternos.map((enlace, indice) => (
+              <div key={indice} className="grid gap-2 rounded-xl border border-slate-800 bg-slate-900/50 p-3 sm:grid-cols-[0.7fr_1.3fr_auto]">
+                <input aria-label={`Nombre del enlace ${indice + 1}`} maxLength="50" value={enlace.etiqueta} onChange={(evento) => actualizarEnlace(indice, 'etiqueta', evento.target.value)} className={INPUT} placeholder="Ej.: Sitio oficial" />
+                <input aria-label={`Dirección del enlace ${indice + 1}`} type="url" value={enlace.url} onChange={(evento) => actualizarEnlace(indice, 'url', evento.target.value)} className={INPUT} placeholder="https://..." />
+                <button type="button" onClick={() => quitarEnlace(indice)} aria-label={`Quitar enlace ${indice + 1}`} className="grid size-10 place-items-center self-center rounded-lg text-slate-400 hover:bg-red-950/40 hover:text-red-300"><Trash2 aria-hidden="true" className="size-4" /></button>
+              </div>
+            ))}
+          </div>
+          <button type="button" disabled={datos.enlacesExternos.length >= MAXIMO_ENLACES} onClick={agregarEnlace} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-2 text-xs font-semibold text-slate-200 hover:border-(--color-brand-secondary) disabled:cursor-not-allowed disabled:opacity-40"><Plus aria-hidden="true" className="size-3.5" /> Agregar enlace</button>
+          <p className="text-xs text-slate-500">{datos.enlacesExternos.length} de {MAXIMO_ENLACES} enlaces</p>
+        </CampoPublico>
+
+        {tipo === 'lector_escritor' && <ObrasPublicadas obras={perfil.publico?.obras_publicadas ?? []} />}
+
+        <CampoPublico etiqueta="Datos de contacto públicos" valor={contactoPublico} nota="Son independientes del correo y teléfono utilizados para acceder a la cuenta." activo={campoActivo === 'contacto'} bloqueado={Boolean(campoActivo)} onEditar={() => editar('contacto')} onGuardar={guardar('contacto')} onCancelar={cancelar} amplio>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="space-y-1.5 text-xs font-semibold text-slate-300">Correo público<input type="email" value={datos.emailContacto} onChange={(evento) => setDatos((actual) => ({ ...actual, emailContacto: evento.target.value }))} className={INPUT} placeholder="contacto@ejemplo.com" /></label>
+            <label className="space-y-1.5 text-xs font-semibold text-slate-300">Teléfono público<input type="tel" maxLength="30" value={datos.telefonoContacto} onChange={(evento) => setDatos((actual) => ({ ...actual, telefonoContacto: evento.target.value }))} className={INPUT} placeholder="+54 ..." /></label>
+          </div>
+          <OpcionVisibilidad disabled={!datos.perfilVisible} visible={datos.contactoVisible} onChange={(contactoVisible) => setDatos((actual) => ({ ...actual, contactoVisible }))} visibleTexto="Mostrar contacto" privadoTexto="Mantener contacto oculto" />
+          {!datos.perfilVisible && <p className="text-xs text-amber-200">Primero hacé visible el perfil para publicar datos de contacto.</p>}
+        </CampoPublico>
+
         <CampoPublico etiqueta="Visibilidad general" valor={visibilidadPerfil} nota="Si el perfil es privado, no aparecerá en búsquedas ni tendrá una página pública." activo={campoActivo === 'perfilVisible'} bloqueado={Boolean(campoActivo)} onEditar={() => editar('perfilVisible')} onGuardar={guardar('perfilVisible')} onCancelar={cancelar}>
-          <OpcionVisibilidad visible={datos.perfilVisible} onChange={(perfilVisible) => setDatos((actual) => ({ ...actual, perfilVisible, ubicacionVisible: perfilVisible ? actual.ubicacionVisible : false }))} visibleTexto="Visible para la comunidad" privadoTexto="Mantener perfil privado" />
+          <OpcionVisibilidad visible={datos.perfilVisible} onChange={(perfilVisible) => setDatos((actual) => ({ ...actual, perfilVisible, ubicacionVisible: perfilVisible ? actual.ubicacionVisible : false, contactoVisible: perfilVisible ? actual.contactoVisible : false }))} visibleTexto="Visible para la comunidad" privadoTexto="Mantener perfil privado" />
         </CampoPublico>
 
         <CampoPublico etiqueta="Ubicación en el perfil" valor={datos.ubicacionVisible && datos.perfilVisible ? <span className="inline-flex items-center gap-1.5 text-emerald-300"><Eye aria-hidden="true" className="size-4" /> Mostrar ciudad y país</span> : <span className="inline-flex items-center gap-1.5 text-slate-400"><EyeOff aria-hidden="true" className="size-4" /> Ubicación oculta</span>} nota="Nunca mostramos el domicilio ni otros datos privados." activo={campoActivo === 'ubicacionVisible'} bloqueado={Boolean(campoActivo)} onEditar={() => editar('ubicacionVisible')} onGuardar={guardar('ubicacionVisible')} onCancelar={cancelar}>

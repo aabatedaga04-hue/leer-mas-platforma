@@ -10,8 +10,16 @@ const EJEMPLOS = {
     detalle: { apodo: 'alexlee' },
     publico: {
       imagen_url: '', biografia: 'Leo para descubrir otras formas de mirar el mundo y escribo cuentos breves.',
-      generos: ['Cuento', 'Ciencia ficción'], intereses: ['Descubrir autores emergentes', 'Escribir reseñas'],
-      perfil_visible: true, ubicacion_visible: true,
+      generos: ['Cuento', 'Artículos y papers científicos', 'Ciencias sociales'],
+      intereses: ['Descubrir autores emergentes', 'Escribir reseñas', 'Leer artículos y papers científicos'],
+      enlaces_externos: [{ etiqueta: 'Portfolio de escritura', url: 'https://ejemplo.com/alex' }],
+      obras_publicadas: [
+        { id: 1, titulo: 'Cuaderno de invierno', tipo: 'Cuento', fecha: '12/08/2026', estado: 'Publicada' },
+        { id: 2, titulo: 'La ciudad que recuerda', tipo: 'Fragmento', fecha: '03/06/2026', estado: 'Publicada' },
+        { id: 3, titulo: 'Notas sobre lectura digital', tipo: 'Ensayo', fecha: '18/03/2026', estado: 'Publicada' },
+      ],
+      email_contacto: '', telefono_contacto: '', contacto_visible: false,
+      perfil_visible: true, ubicacion_visible: false,
     },
   },
   biblioteca: {
@@ -21,7 +29,10 @@ const EJEMPLOS = {
     detalle: { nombre: 'Biblioteca del Encuentro', cuit: '30-00000000-0', direccion: 'Calle Ejemplo 123' },
     publico: {
       imagen_url: '', biografia: 'Una biblioteca barrial abierta al encuentro, la lectura y la circulación de historias.',
-      generos: [], intereses: [], horarios_atencion: 'Lunes a viernes de 9 a 18 h.', perfil_visible: true, ubicacion_visible: true,
+      generos: [], intereses: [], horarios_atencion: 'Lunes a viernes de 9 a 18 h.',
+      enlaces_externos: [{ etiqueta: 'Catálogo en línea', url: 'https://ejemplo.com/catalogo' }],
+      email_contacto: 'consultas@bibliotecadelencuentro.org', telefono_contacto: '+54 11 5555-0101', contacto_visible: false,
+      perfil_visible: true, ubicacion_visible: false,
     },
   },
   editorial: {
@@ -31,7 +42,10 @@ const EJEMPLOS = {
     detalle: { nombre_fantasia: 'Tinta Norte', razon_social: 'Editorial de Ejemplo S.A.', cuit: '30-00000000-0', sitio_web: 'https://ejemplo.com' },
     publico: {
       imagen_url: '', biografia: 'Editorial independiente enfocada en nuevas voces de la narrativa latinoamericana.',
-      generos: ['Novela', 'Poesía'], intereses: [], perfil_visible: true, ubicacion_visible: false,
+      generos: ['Novela', 'Poesía', 'Literatura académica'], intereses: [],
+      enlaces_externos: [{ etiqueta: 'Sitio editorial', url: 'https://ejemplo.com' }],
+      email_contacto: 'prensa@tintanorte.example', telefono_contacto: '', contacto_visible: false,
+      perfil_visible: true, ubicacion_visible: false,
     },
   },
 }
@@ -78,9 +92,13 @@ export default function VistaPreviaPerfil() {
         biografia: datos.biografia,
         generos: datos.generos,
         intereses: datos.intereses,
+        enlaces_externos: datos.enlacesExternos,
+        email_contacto: datos.emailContacto,
+        telefono_contacto: datos.telefonoContacto,
         horarios_atencion: datos.horariosAtencion,
         perfil_visible: datos.perfilVisible,
         ubicacion_visible: datos.ubicacionVisible,
+        contacto_visible: datos.contactoVisible,
       },
     }))
   }
