@@ -233,7 +233,12 @@ export async function obtenerPerfil(idUsuario) {
     return usuario
   }
 
-  const { data: detalle } = await supabase.from(tabla).select('*').eq('id_usuario', idUsuario).maybeSingle()
+  const { data: detalle, error: errorDetalle } = await supabase
+    .from(tabla)
+    .select('*')
+    .eq('id_usuario', idUsuario)
+    .maybeSingle()
+  if (errorDetalle) throw traducirError(errorDetalle, 'No fue posible cargar los datos específicos del perfil.')
   return { ...usuario, detalle: detalle ?? null }
 }
 

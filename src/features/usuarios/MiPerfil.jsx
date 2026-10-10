@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { consultarAliasDisponible } from './authApi'
 import { limpiarValidacion, mostrarValidacionEspanol } from './formValidation'
 import { actualizarPerfilBasico } from './perfilApi'
-import { validarPerfilBasico } from './perfilValidation'
+import { validarCampoPerfil } from './perfilValidation'
 import SearchableSelect from './SearchableSelect'
 import { cargarLocalidades, cargarPaises, cargarProvincias } from './ubicacionesApi'
 import { useAuth } from './useAuth'
@@ -40,6 +40,7 @@ function CampoPerfil({ etiqueta, valor, editable = true, activo = false, onEdita
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">{etiqueta}</p>
           {!activo && <p className="mt-1 break-words text-[15px] leading-6 text-slate-100">{valor || <span className="text-slate-500">Sin completar</span>}</p>}
+          {!activo && nota && <p className="mt-1 text-xs leading-5 text-slate-500">{nota}</p>}
         </div>
         {editable ? (
           !activo && <button type="button" onClick={onEditar} disabled={guardando} aria-label={`Editar ${etiqueta.toLowerCase()}`} title={`Editar ${etiqueta.toLowerCase()}`} className="grid size-8 shrink-0 place-items-center rounded-lg border border-slate-700 text-slate-300 transition hover:border-(--color-brand-secondary) hover:bg-slate-800 hover:text-(--color-brand-cream) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-brand-cream) disabled:cursor-not-allowed disabled:opacity-40"><Pencil aria-hidden="true" className="size-3.5" /></button>
@@ -78,6 +79,8 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
   const [error, setError] = useState(null)
   const [aviso, setAviso] = useState(null)
   const solicitudLugar = useRef(0)
+  const dialogoDescartar = useRef(null)
+  const focoAnterior = useRef(null)
 
   useEffect(() => {
     if (!campoActivo) setDatos(datosDesdePerfil(perfil))
@@ -97,6 +100,40 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
     }, 450)
     return () => { vigente = false; clearTimeout(temporizador) }
   }, [datos.apodo, campoActivo, perfil, perfilDemostracion])
+
+  useEffect(() => {
+    if (campoPendiente === null) return undefined
+
+    focoAnterior.current = document.activeElement
+    const enfocar = requestAnimationFrame(() => dialogoDescartar.current?.querySelector('button')?.focus())
+    const manejarTeclado = (evento) => {
+      if (evento.key === 'Escape') {
+        evento.preventDefault()
+        setCampoPendiente(null)
+        return
+      }
+
+      if (evento.key !== 'Tab') return
+      const controles = [...(dialogoDescartar.current?.querySelectorAll('button:not(:disabled)') ?? [])]
+      if (!controles.length) return
+      const primero = controles[0]
+      const ultimo = controles[controles.length - 1]
+      if (evento.shiftKey && document.activeElement === primero) {
+        evento.preventDefault()
+        ultimo.focus()
+      } else if (!evento.shiftKey && document.activeElement === ultimo) {
+        evento.preventDefault()
+        primero.focus()
+      }
+    }
+
+    document.addEventListener('keydown', manejarTeclado)
+    return () => {
+      cancelAnimationFrame(enfocar)
+      document.removeEventListener('keydown', manejarTeclado)
+      if (focoAnterior.current?.isConnected) focoAnterior.current.focus()
+    }
+  }, [campoPendiente])
 
   const actualizar = (campo) => (evento) => {
     setDatos((actual) => ({ ...actual, [campo]: evento.target.value }))
@@ -211,7 +248,7 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
       setError('Seleccioná un país, una provincia y una localidad de las listas.')
       return
     }
-    const errores = validarPerfilBasico(datos, perfil.tipo_usuario)
+    const errores = validarCampoPerfil(datos, perfil.tipo_usuario, campoActivo)
     if (errores.length) { setError(errores[0]); return }
     if (estadoAlias === 'ocupado') { setError('Ese alias ya está en uso. Elegí otro.'); return }
 
@@ -225,7 +262,7 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
 
     setGuardando(true)
     try {
-      await actualizarPerfilBasico(datos, perfil.tipo_usuario)
+      await actualizarPerfilBasico(datos, perfil.tipo_usuario, campoActivo)
       const actualizado = await refrescar()
       if (!actualizado) throw new Error('Guardamos el cambio, pero no pudimos volver a cargar el perfil. Recargá la página para comprobarlo.')
       setAviso('Cambio guardado correctamente.')
@@ -315,10 +352,10 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
       )}
 
       {campoPendiente !== null && (
-        <div role="dialog" aria-modal="true" aria-labelledby="descartar-titulo" className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4">
+        <div ref={dialogoDescartar} role="dialog" aria-modal="true" aria-labelledby="descartar-titulo" aria-describedby="descartar-descripcion" className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4">
           <div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
             <h2 id="descartar-titulo" className="font-serif text-xl text-(--color-brand-cream)">¿Descartar el cambio?</h2>
-            <p className="mt-3 text-sm text-slate-400">El dato que estás editando volverá a su valor anterior.</p>
+            <p id="descartar-descripcion" className="mt-3 text-sm text-slate-400">El dato que estás editando volverá a su valor anterior.</p>
             <div className="mt-6 flex justify-end gap-3">
               <button type="button" onClick={() => setCampoPendiente(null)} className="rounded-full border border-slate-600 px-4 py-2 text-sm text-slate-200">Seguir editando</button>
               <button type="button" onClick={() => descartar(campoPendiente === 'cancelar' ? null : campoPendiente)} className="rounded-full bg-(--color-brand-primary) px-4 py-2 text-sm font-semibold text-white">Descartar</button>

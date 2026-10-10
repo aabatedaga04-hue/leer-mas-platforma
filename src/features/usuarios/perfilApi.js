@@ -1,12 +1,13 @@
 import { supabase } from '../../supabaseClient'
 import { AuthError } from './authApi'
-import { validarPerfilBasico } from './perfilValidation'
+import { validarCampoPerfil } from './perfilValidation'
 
-export async function actualizarPerfilBasico(datos, tipoUsuario) {
-  const errores = validarPerfilBasico(datos, tipoUsuario)
+export async function actualizarPerfilBasico(datos, tipoUsuario, campoActivo) {
+  const errores = validarCampoPerfil(datos, tipoUsuario, campoActivo)
   if (errores.length) throw new AuthError(errores[0])
 
   const { error } = await supabase.rpc('fn_actualizar_perfil_basico', {
+    p_campo: campoActivo,
     p_nombre: datos.nombre?.trim() || null,
     p_apellido: datos.apellido?.trim() || null,
     p_telefono: datos.telefono.trim(),

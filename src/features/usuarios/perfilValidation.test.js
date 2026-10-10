@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { validarPerfilBasico } from './perfilValidation.js'
+import { validarCampoPerfil, validarPerfilBasico } from './perfilValidation.js'
 
 const datos = {
   nombre: 'Ana', apellido: 'Pérez', telefono: '+54 11 1234-5678',
@@ -35,4 +35,19 @@ test('la editorial solo acepta sitios HTTP o HTTPS válidos', () => {
 
 test('la editorial exige un nombre de fantasía', () => {
   assert.ok(validarPerfilBasico({ ...datos, nombreFantasia: '' }, 'editorial').some((error) => error.includes('fantasía')))
+})
+
+test('validar un campo no bloquea por datos ajenos a la edición', () => {
+  const incompleto = { ...datos, localidad: '', apodo: '' }
+  assert.deepEqual(validarCampoPerfil(incompleto, 'lector_escritor', 'nombre'), [])
+})
+
+test('la ubicación valida también el teléfono porque puede cambiar su prefijo', () => {
+  const errores = validarCampoPerfil({ ...datos, telefono: '+54' }, 'lector_escritor', 'ubicacion')
+  assert.ok(errores.some((error) => error.includes('teléfono')))
+})
+
+test('rechaza campos incompatibles con el tipo de cuenta', () => {
+  assert.ok(validarCampoPerfil(datos, 'editorial', 'apodo').some((error) => error.includes('tipo de cuenta')))
+  assert.ok(validarCampoPerfil(datos, 'biblioteca', 'nombreFantasia').some((error) => error.includes('tipo de cuenta')))
 })
