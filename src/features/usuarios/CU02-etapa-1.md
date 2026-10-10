@@ -22,6 +22,6 @@ Ejecutar `npm test`, `npm run lint` y `npm run build` antes de publicar cambios.
 
 ## Fuera de esta etapa
 
-Fotografía/logotipo, biografía, intereses/géneros, visibilidad, contacto público, obras recomendadas de Editorial, cambio verificado de correo, cambio de contraseña con invalidación de otras sesiones, solicitudes institucionales y desactivación. Esas acciones requieren decisiones de producto y ampliaciones de base de datos.
+La propuesta visual de fotografía/logotipo, biografía, intereses/géneros y visibilidad ya se encuentra en `CU02-etapa-2.md`, pero continúa sin persistencia hasta acordar y actualizar el DER. Siguen pendientes el contacto público, las obras recomendadas de Editorial, el cambio verificado de correo, el cambio de contraseña con invalidación de otras sesiones, las solicitudes institucionales y la desactivación.
 
 La migración y el recorrido completo no están probados contra el Supabase compartido; no considerarlos desplegados hasta ejecutar el SQL y probar con cuentas reales de los tres tipos.

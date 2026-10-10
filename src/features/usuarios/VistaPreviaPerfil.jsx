@@ -8,18 +8,31 @@ const EJEMPLOS = {
     nombre: 'Alex', apellido: 'López', email: 'alex@ejemplo.com',
     telefono: '+54 11 1234-5678', pais: 'Argentina', provincia: 'Buenos Aires', localidad: 'La Plata',
     detalle: { apodo: 'alexlee' },
+    publico: {
+      imagen_url: '', biografia: 'Leo para descubrir otras formas de mirar el mundo y escribo cuentos breves.',
+      generos: ['Cuento', 'Ciencia ficción'], intereses: ['Descubrir autores emergentes', 'Escribir reseñas'],
+      perfil_visible: true, ubicacion_visible: true,
+    },
   },
   biblioteca: {
     tipo_usuario: 'biblioteca', estado: 'activo',
     nombre: 'Marina', apellido: 'García', email: 'biblioteca@ejemplo.com',
     telefono: '+54 11 1234-5678', pais: 'Argentina', provincia: 'Buenos Aires', localidad: 'La Plata',
     detalle: { nombre: 'Biblioteca del Encuentro', cuit: '30-00000000-0', direccion: 'Calle Ejemplo 123' },
+    publico: {
+      imagen_url: '', biografia: 'Una biblioteca barrial abierta al encuentro, la lectura y la circulación de historias.',
+      generos: [], intereses: [], horarios_atencion: 'Lunes a viernes de 9 a 18 h.', perfil_visible: true, ubicacion_visible: true,
+    },
   },
   editorial: {
     tipo_usuario: 'editorial', estado: 'activo',
     nombre: null, apellido: null, email: 'editorial@ejemplo.com',
     telefono: '+54 11 1234-5678', pais: 'Argentina', provincia: 'Buenos Aires', localidad: 'La Plata',
     detalle: { nombre_fantasia: 'Tinta Norte', razon_social: 'Editorial de Ejemplo S.A.', cuit: '30-00000000-0', sitio_web: 'https://ejemplo.com' },
+    publico: {
+      imagen_url: '', biografia: 'Editorial independiente enfocada en nuevas voces de la narrativa latinoamericana.',
+      generos: ['Novela', 'Poesía'], intereses: [], perfil_visible: true, ubicacion_visible: false,
+    },
   },
 }
 
@@ -56,6 +69,22 @@ export default function VistaPreviaPerfil() {
     }))
   }
 
+  const guardarPerfilPublico = (datos) => {
+    setPerfil((actual) => ({
+      ...actual,
+      publico: {
+        ...actual.publico,
+        imagen_url: datos.imagenPerfilUrl,
+        biografia: datos.biografia,
+        generos: datos.generos,
+        intereses: datos.intereses,
+        horarios_atencion: datos.horariosAtencion,
+        perfil_visible: datos.perfilVisible,
+        ubicacion_visible: datos.ubicacionVisible,
+      },
+    }))
+  }
+
   return (
     <div>
       <aside className="mx-auto mb-4 flex max-w-4xl flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-600/40 bg-amber-950/30 px-4 py-3 text-sm text-amber-100">
@@ -69,7 +98,7 @@ export default function VistaPreviaPerfil() {
           ))}
         </div>
       </aside>
-      <MiPerfil key={tipo} perfilDemostracion={perfil} onGuardarVistaPrevia={guardarLocalmente} />
+      <MiPerfil key={tipo} perfilDemostracion={perfil} onGuardarVistaPrevia={guardarLocalmente} onGuardarPerfilPublico={guardarPerfilPublico} />
     </div>
   )
 }

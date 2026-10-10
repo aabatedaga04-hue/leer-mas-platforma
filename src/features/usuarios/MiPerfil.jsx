@@ -5,6 +5,7 @@ import { consultarAliasDisponible } from './authApi'
 import { limpiarValidacion, mostrarValidacionEspanol } from './formValidation'
 import { actualizarPerfilBasico } from './perfilApi'
 import { validarCampoPerfil } from './perfilValidation'
+import PerfilPublico from './PerfilPublico'
 import SearchableSelect from './SearchableSelect'
 import { cargarLocalidades, cargarPaises, cargarProvincias } from './ubicacionesApi'
 import { useAuth } from './useAuth'
@@ -60,7 +61,7 @@ function CampoPerfil({ etiqueta, valor, editable = true, activo = false, onEdita
   )
 }
 
-export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrevia = null }) {
+export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrevia = null, onGuardarPerfilPublico = null }) {
   const { perfil: perfilReal, refrescar } = useAuth()
   const perfil = perfilDemostracion ?? perfilReal
   const [campoActivo, setCampoActivo] = useState(null)
@@ -282,7 +283,11 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
   const esEditorial = perfil.tipo_usuario === 'editorial'
   const telefono = datos.telefono.match(/^(\+[0-9-]{1,8})\s*(.*)$/)
   const ubicacion = [perfil.localidad, perfil.provincia, perfil.pais].filter(Boolean).join(', ')
-  const nombreVisible = esEditorial ? perfil.detalle?.nombre_fantasia : `${perfil.nombre ?? ''} ${perfil.apellido ?? ''}`.trim()
+  const nombreVisible = esEditorial
+    ? perfil.detalle?.nombre_fantasia
+    : esBiblioteca
+      ? perfil.detalle?.nombre
+      : `${perfil.nombre ?? ''} ${perfil.apellido ?? ''}`.trim()
   const iniciales = nombreVisible?.split(/\s+/).slice(0, 2).map((parte) => parte[0]).join('').toUpperCase() || 'LE'
   const campo = (clave, etiqueta, valor, editor, opciones = {}) => (
     <CampoPerfil key={clave} etiqueta={etiqueta} valor={valor} activo={campoActivo === clave}
@@ -297,7 +302,9 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
   return (
     <section className="mx-auto max-w-4xl space-y-4 pb-10">
       <header className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4">
-        <div aria-hidden="true" className="grid size-12 shrink-0 place-items-center rounded-xl bg-(--color-brand-primary)/25 font-serif text-xl text-(--color-brand-cream)">{iniciales}</div>
+        <div aria-hidden="true" className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-(--color-brand-primary)/25 font-serif text-xl text-(--color-brand-cream)">
+          {perfil.publico?.imagen_url ? <img src={perfil.publico.imagen_url} alt="" className="size-full object-cover" /> : iniciales}
+        </div>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-(--color-brand-secondary)">Tu espacio en LEER+</p>
           <h1 className="font-serif text-2xl leading-tight text-(--color-brand-cream)">Mi perfil</h1>
@@ -350,6 +357,8 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
           </div>
         </div>
       )}
+
+      {onGuardarPerfilPublico && <PerfilPublico perfil={perfil} onGuardar={onGuardarPerfilPublico} />}
 
       {campoPendiente !== null && (
         <div ref={dialogoDescartar} role="dialog" aria-modal="true" aria-labelledby="descartar-titulo" aria-describedby="descartar-descripcion" className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4">
