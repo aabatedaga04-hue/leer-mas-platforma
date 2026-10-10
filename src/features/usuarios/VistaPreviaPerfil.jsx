@@ -16,7 +16,7 @@ const EJEMPLOS = {
   },
   biblioteca: {
     tipo_usuario: 'biblioteca', estado: 'activo',
-    nombre: 'Marina', apellido: 'García', email: 'biblioteca@ejemplo.com',
+    nombre: null, apellido: null, email: 'biblioteca@ejemplo.com',
     telefono: '+54 11 1234-5678', pais: 'Argentina', provincia: 'Buenos Aires', localidad: 'La Plata',
     detalle: { nombre: 'Biblioteca del Encuentro', cuit: '30-00000000-0', direccion: 'Calle Ejemplo 123' },
     publico: {

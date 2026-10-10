@@ -50,4 +50,6 @@ test('la ubicación valida también el teléfono porque puede cambiar su prefijo
 test('rechaza campos incompatibles con el tipo de cuenta', () => {
   assert.ok(validarCampoPerfil(datos, 'editorial', 'apodo').some((error) => error.includes('tipo de cuenta')))
   assert.ok(validarCampoPerfil(datos, 'biblioteca', 'nombreFantasia').some((error) => error.includes('tipo de cuenta')))
+  assert.ok(validarCampoPerfil(datos, 'biblioteca', 'nombre').some((error) => error.includes('tipo de cuenta')))
+  assert.ok(validarCampoPerfil(datos, 'biblioteca', 'apellido').some((error) => error.includes('tipo de cuenta')))
 })

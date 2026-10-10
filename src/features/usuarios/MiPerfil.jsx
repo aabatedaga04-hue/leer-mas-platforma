@@ -321,8 +321,8 @@ export default function MiPerfil({ perfilDemostracion = null, onGuardarVistaPrev
           <p className="text-xs text-slate-500">Usá el lápiz para cambiar un dato</p>
         </div>
         <div className="grid gap-2 min-[520px]:grid-cols-2">
-          {!esEditorial && campo('nombre', 'Nombre', perfil.nombre, entrada('nombre', 'Nombre', { required: true, maxLength: 100, autoComplete: 'given-name', autoFocus: true }))}
-          {!esEditorial && campo('apellido', 'Apellido', perfil.apellido, entrada('apellido', 'Apellido', { required: true, maxLength: 100, autoComplete: 'family-name', autoFocus: true }))}
+          {esPersonal && campo('nombre', 'Nombre', perfil.nombre, entrada('nombre', 'Nombre', { required: true, maxLength: 100, autoComplete: 'given-name', autoFocus: true }))}
+          {esPersonal && campo('apellido', 'Apellido', perfil.apellido, entrada('apellido', 'Apellido', { required: true, maxLength: 100, autoComplete: 'family-name', autoFocus: true }))}
           {esPersonal && campo('apodo', 'Alias', perfil.detalle?.apodo, <>
             {entrada('apodo', 'Alias', { required: true, minLength: 3, maxLength: 50, autoFocus: true })}
             {estadoAlias && <p role="status" className={`mt-2 text-xs ${estadoAlias === 'disponible' ? 'text-emerald-300' : 'text-red-300'}`}>{estadoAlias === 'disponible' ? '✓ El alias está disponible.' : estadoAlias === 'ocupado' ? 'Ese alias ya está en uso.' : 'No pudimos comprobarlo. Se verificará al guardar.'}</p>}

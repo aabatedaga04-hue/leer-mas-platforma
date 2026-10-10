@@ -55,8 +55,8 @@ function validarEntrada(email: string, password: string, metadata: Record<string
   }
   if (metadata.politicas_aceptadas !== 'true') return 'Debés aceptar los Términos y la Política de Privacidad.'
   if (!/^\d{11}$/.test(texto(metadata.cuit).replace(/\D/g, ''))) return 'Ingresá un CUIT válido de 11 dígitos.'
-  if (metadata.tipo_usuario === 'biblioteca' && (!texto(metadata.nombre, 100) || !texto(metadata.apellido, 100) || !texto(metadata.nombre_institucion, 150))) {
-    return 'Completá los datos de contacto y el nombre de la biblioteca.'
+  if (metadata.tipo_usuario === 'biblioteca' && !texto(metadata.nombre_institucion, 150)) {
+    return 'Ingresá el nombre de la biblioteca.'
   }
   if (metadata.tipo_usuario === 'editorial' && (!texto(metadata.nombre_fantasia, 150) || !texto(metadata.razon_social, 150))) {
     return 'Ingresá el nombre de fantasía y la razón social de la editorial.'
@@ -100,6 +100,9 @@ Deno.serve(async (request: Request) => {
     const documentos = formulario.getAll('documentos').filter((archivo): archivo is File => archivo instanceof File)
     const errorValidacion = validarEntrada(email, password, metadata, documentos)
     if (errorValidacion) return responder(origen, 400, { error: errorValidacion })
+    const metadataInstitucional = Object.fromEntries(
+      Object.entries(metadata).filter(([clave]) => !['nombre', 'apellido'].includes(clave)),
+    )
     for (const archivo of documentos) {
       const firma = new TextDecoder().decode(await archivo.slice(0, 5).arrayBuffer())
       if (firma !== '%PDF-') return responder(origen, 400, { error: 'Uno de los archivos no contiene un PDF válido.' })
@@ -129,7 +132,7 @@ Deno.serve(async (request: Request) => {
       password,
       options: {
         emailRedirectTo: `${origenRedireccion}/verificar-correo`,
-        data: metadata,
+        data: metadataInstitucional,
       },
     })
     if (errorAlta) {
@@ -158,7 +161,7 @@ Deno.serve(async (request: Request) => {
 
     const { data: solicitud, error: errorSolicitud } = await administrador
       .from('solicitud_rol')
-      .insert({ id_usuario: usuarioCreado, tipo_rol: metadata.tipo_usuario })
+      .insert({ id_usuario: usuarioCreado, tipo_rol: metadataInstitucional.tipo_usuario })
       .select('id_solicitud')
       .single()
     if (errorSolicitud) throw errorSolicitud

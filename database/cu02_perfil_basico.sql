@@ -53,12 +53,12 @@ BEGIN
         RAISE EXCEPTION 'Tu cuenta no esta habilitada para editar el perfil';
     END IF;
 
-    IF p_campo = 'nombre' AND v_tipo <> 'editorial' THEN
+    IF p_campo = 'nombre' AND v_tipo = 'lector_escritor' THEN
         IF length(trim(COALESCE(p_nombre, ''))) NOT BETWEEN 1 AND 100 THEN
             RAISE EXCEPTION 'Completa un nombre de hasta 100 caracteres';
         END IF;
         UPDATE public.usuario SET nombre = trim(p_nombre) WHERE id_usuario = auth.uid();
-    ELSIF p_campo = 'apellido' AND v_tipo <> 'editorial' THEN
+    ELSIF p_campo = 'apellido' AND v_tipo = 'lector_escritor' THEN
         IF length(trim(COALESCE(p_apellido, ''))) NOT BETWEEN 1 AND 100 THEN
             RAISE EXCEPTION 'Completa un apellido de hasta 100 caracteres';
         END IF;

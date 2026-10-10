@@ -234,7 +234,6 @@ function Registro() {
   }
 
   const esInstitucion = datos.tipoUsuario !== TIPO_USUARIO.LECTOR_ESCRITOR
-  const esEditorial = datos.tipoUsuario === TIPO_USUARIO.EDITORIAL
   const contrasenaValida = validarContrasena(datos.contrasena).length === 0
   const contrasenasCoinciden = datos.contrasena === datos.confirmacion
 
@@ -329,7 +328,7 @@ function Registro() {
         </fieldset>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          {!esEditorial && <>
+          {!esInstitucion && <>
             <Campo id="registro-nombre" etiqueta="Nombre" autoComplete="given-name" required value={datos.nombre} onChange={actualizar('nombre')} />
             <Campo id="registro-apellido" etiqueta="Apellido" autoComplete="family-name" required value={datos.apellido} onChange={actualizar('apellido')} />
           </>}

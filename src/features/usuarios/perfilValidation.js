@@ -11,7 +11,7 @@ const CAMPOS_EDITABLES = {
 
 const CAMPOS_POR_TIPO = {
   lector_escritor: new Set(['nombre', 'apellido', 'telefono', 'ubicacion', 'apodo']),
-  biblioteca: new Set(['nombre', 'apellido', 'telefono', 'ubicacion', 'direccion']),
+  biblioteca: new Set(['telefono', 'ubicacion', 'direccion']),
   editorial: new Set(['telefono', 'ubicacion', 'nombreFantasia', 'sitioWeb']),
 }
 
@@ -34,7 +34,7 @@ export function validarPerfilBasico(datos, tipoUsuario, campoActivo = null) {
     ['localidad', 'localidad', 150],
   ]
 
-  if (tipoUsuario !== 'editorial') {
+  if (tipoUsuario === 'lector_escritor') {
     obligatorios.unshift(['nombre', 'nombre', 100], ['apellido', 'apellido', 100])
   }
 

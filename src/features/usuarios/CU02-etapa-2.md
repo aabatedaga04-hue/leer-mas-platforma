@@ -38,7 +38,7 @@ No conviene guardar géneros e intereses como texto libre ni como una lista embe
 ## Validación antes de integrar
 
 1. Revisar visualmente las tres variantes en `/vista-previa-cu02`.
-2. Confirmar con el equipo si la cuenta de Biblioteca representa solo a la institución o si conserva nombre y apellido privados de una persona autorizada. La documentación actual y el formulario de CU01 no son consistentes en este punto.
+2. Mantener Biblioteca y Editorial como cuentas exclusivamente institucionales, sin nombre/apellido de una persona como identidad de la cuenta.
 3. Aprobar formatos, peso máximo y criterio de visibilidad de imágenes.
 4. Actualizar DER y documentación funcional.
 5. Recién entonces crear la migración y conectar esta etapa con Supabase.

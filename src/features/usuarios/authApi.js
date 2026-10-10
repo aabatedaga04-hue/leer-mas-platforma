@@ -78,8 +78,6 @@ function metadataRegistro(datos) {
   if (datos.tipoUsuario === TIPO_USUARIO.BIBLIOTECA) {
     return {
       ...comun,
-      nombre: datos.nombre.trim(),
-      apellido: datos.apellido.trim(),
       cuit: datos.cuit.trim(),
       nombre_institucion: datos.nombreInstitucion.trim(),
       direccion: datos.direccion.trim(),

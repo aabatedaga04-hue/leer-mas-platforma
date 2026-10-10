@@ -72,6 +72,13 @@ BEGIN
         RAISE EXCEPTION 'Es obligatorio aceptar los terminos y la politica de privacidad';
     END IF;
 
+    IF v_tipo = 'lector_escritor' AND (
+        length(trim(COALESCE(NEW.raw_user_meta_data->>'nombre', ''))) NOT BETWEEN 1 AND 100
+        OR length(trim(COALESCE(NEW.raw_user_meta_data->>'apellido', ''))) NOT BETWEEN 1 AND 100
+    ) THEN
+        RAISE EXCEPTION 'El nombre y el apellido son obligatorios para la cuenta personal';
+    END IF;
+
     INSERT INTO public.usuario (
         id_usuario, email, telefono, estado, tipo_usuario, nombre, apellido,
         pais, provincia, localidad, terminos_version, privacidad_version,
@@ -82,8 +89,8 @@ BEGIN
         NULLIF(trim(NEW.raw_user_meta_data->>'telefono'), ''),
         v_estado,
         v_tipo::public.tipo_usuario_enum,
-        NULLIF(trim(NEW.raw_user_meta_data->>'nombre'), ''),
-        NULLIF(trim(NEW.raw_user_meta_data->>'apellido'), ''),
+        CASE WHEN v_tipo = 'lector_escritor' THEN NULLIF(trim(NEW.raw_user_meta_data->>'nombre'), '') ELSE NULL END,
+        CASE WHEN v_tipo = 'lector_escritor' THEN NULLIF(trim(NEW.raw_user_meta_data->>'apellido'), '') ELSE NULL END,
         NULLIF(trim(NEW.raw_user_meta_data->>'pais'), ''),
         NULLIF(trim(NEW.raw_user_meta_data->>'provincia'), ''),
         NULLIF(trim(NEW.raw_user_meta_data->>'localidad'), ''),
